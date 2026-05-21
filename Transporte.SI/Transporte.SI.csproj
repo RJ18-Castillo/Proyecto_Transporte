@@ -16,4 +16,10 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Transporte.BL\Transporte.BL.csproj" />
+    <ProjectReference Include="..\Transporte.DA\Transporte.DA.csproj" />
+    <ProjectReference Include="..\Transporte.Model\Transporte.Model.csproj" />
+  </ItemGroup>
+
 </Project>

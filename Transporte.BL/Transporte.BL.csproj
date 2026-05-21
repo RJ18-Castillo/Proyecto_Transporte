@@ -16,4 +16,9 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Transporte.DA\Transporte.DA.csproj" />
+    <ProjectReference Include="..\Transporte.Model\Transporte.Model.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,91 @@
+﻿@model List<Transporte.Model.Chofer>
+
+@{
+    ViewData["Title"] = "Choferes";
+}
+
+<div class="container mt-4">
+
+    <h2>Choferes</h2>
+
+    <form method="get">
+
+        <div class="row mb-3">
+
+            <div class="col-md-4">
+
+                <input type="text"
+                       name="filtro"
+                       class="form-control"
+                       placeholder="Buscar por nombre" />
+
+            </div>
+
+            <div class="col-md-2">
+
+                <button type="submit"
+                        class="btn btn-primary">
+                    Buscar
+                </button>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <a asp-action="Create"
+                       class="btn btn-success">
+                    Nuevo Chofer
+                </a>
+
+            </div>
+
+        </div>
+
+    </form>
+
+    <table class="table table-bordered table-striped">
+
+        <thead class="table-dark">
+
+            <tr>
+                <th>Identificación</th>
+                <th>Nombre</th>
+                <th>Apellidos</th>
+                <th>Correo</th>
+                <th>Acciones</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+
+                    <td>@item.Identificacion</td>
+
+                    <td>@item.Nombre</td>
+
+                    <td>@item.Apellidos</td>
+
+                    <td>@item.Correo</td>
+
+                    <td>
+
+                        <a asp-action="Edit"
+                               asp-route-id="@item.Id"
+                               class="btn btn-warning btn-sm">
+                            Editar
+                        </a>
+
+                    </td>
+
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+
+</div>
