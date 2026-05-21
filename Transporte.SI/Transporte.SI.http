@@ -1,0 +1,6 @@
+@Transporte.SI_HostAddress = http://localhost:5271
+
+GET {{Transporte.SI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

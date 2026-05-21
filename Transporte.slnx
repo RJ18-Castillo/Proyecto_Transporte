@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Transporte.BL/Transporte.BL.csproj" />
+  <Project Path="Transporte.DA/Transporte.DA.csproj" />
+  <Project Path="Transporte.Model/Transporte.Model.csproj" />
+  <Project Path="Transporte.SI/Transporte.SI.csproj" />
+  <Project Path="Transporte/Transporte.UI.csproj" />
+</Solution>
