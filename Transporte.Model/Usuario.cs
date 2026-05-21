@@ -21,11 +21,8 @@ namespace Transporte.Model
         [Required]
         [StringLength(50)]
         public string Rol { get; set; }
-
         public int IntentosFallidos { get; set; } = 0;
-
         public bool Bloqueado { get; set; } = false;
-
         public DateTime? FechaBloqueo { get; set; }
     }
 }
