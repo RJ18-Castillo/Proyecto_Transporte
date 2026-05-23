@@ -8,18 +8,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 
+//SESIONES
+
+builder.Services.AddSession();
+
 // DB CONTEXT
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString(
-            "DefaultConnection")));
+options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // INYECCIÓN DE DEPENDENCIAS
 
-builder.Services.AddScoped<
-    IGestorTransporte,
-    GestorTransporte>();
+builder.Services.AddScoped<IGestorTransporte, GestorTransporte>();
 
 var app = builder.Build();
 
@@ -35,6 +35,8 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseRouting();
+
+app.UseSession();
 
 app.UseAuthorization();
 

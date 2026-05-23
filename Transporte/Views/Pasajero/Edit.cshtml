@@ -1,0 +1,39 @@
+﻿@model Transporte.Model.Pasajero
+
+<h1>Editar Pasajero</h1>
+
+<form asp-action="Edit">
+
+    <input type="hidden" asp-for="Id" />
+
+    <div>
+        <label>Identificación</label>
+        <input asp-for="Identificacion" class="form-control" />
+    </div>
+
+    <div>
+        <label>Nombre</label>
+        <input asp-for="Nombre" class="form-control" />
+    </div>
+
+    <div>
+        <label>Apellidos</label>
+        <input asp-for="Apellidos" class="form-control" />
+    </div>
+
+    <div>
+        <label>Correo</label>
+        <input asp-for="Correo" class="form-control" />
+    </div>
+
+    <br />
+
+    <button type="submit" class="btn btn-primary">
+        Guardar Cambios
+    </button>
+
+    <a asp-action="Index" class="btn btn-secondary">
+        Volver
+    </a>
+
+</form>

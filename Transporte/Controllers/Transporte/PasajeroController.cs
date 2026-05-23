@@ -1,94 +1,94 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Transporte.BL;
 using Transporte.Model;
 
-namespace Transporte.UI.Controllers
+namespace Transporte.UI.Controllers.Transporte
 {
-    public class ChoferController : Controller
+    public class PasajeroController : Controller
     {
         private readonly IGestorTransporte _gestor;
 
-        public ChoferController(IGestorTransporte gestor)
+        public PasajeroController(IGestorTransporte gestor)
         {
             _gestor = gestor;
         }
 
-        private bool EsAdministrador()
+        private bool EsChofer()
         {
-            return HttpContext.Session.GetString("Rol") == "Administrador";
+            return HttpContext.Session.GetString("Rol") == "Chofer";
         }
 
         public IActionResult Index(string filtro)
         {
-            if (!EsAdministrador())
+            if (!EsChofer())
             {
                 return RedirectToAction("Index", "Login");
             }
 
-            var lista = _gestor.ListarChoferes(filtro);
-
-            return View("~/Views/Transporte/Chofer.cshtml", lista);
+            ViewBag.Filtro = filtro;
+            var pasajeros = _gestor.ListarPasajeros(filtro);
+            return View(pasajeros);
         }
 
         public IActionResult Create()
         {
-            if (!EsAdministrador())
+            if (!EsChofer())
             {
                 return RedirectToAction("Index", "Login");
             }
-            return View("~/Views/Transporte/CrearChofer.cshtml");
+
+            return View();
         }
 
         [HttpPost]
-        public IActionResult Create(Chofer chofer)
+        public IActionResult Create(Pasajero pasajero)
         {
-            if (!EsAdministrador())
+            if (!EsChofer())
             {
                 return RedirectToAction("Index", "Login");
             }
 
             if (!ModelState.IsValid)
             {
-                return View( "~/Views/Transporte/CrearChofer.cshtml", chofer);
+                return View(pasajero);
             }
 
-            _gestor.AgregarChofer(chofer);
-
+            _gestor.AgregarPasajero(pasajero);
             return RedirectToAction("Index");
         }
 
         public IActionResult Edit(int id)
         {
-            if (!EsAdministrador())
+            if (!EsChofer())
             {
                 return RedirectToAction("Index", "Login");
             }
 
-            var chofer = _gestor.ObtenerChofer(id);
+            var pasajero = _gestor.ObtenerPasajero(id);
 
-            if (chofer == null)
+            if (pasajero == null)
             {
                 return NotFound();
             }
 
-            return View("~/Views/Transporte/EditChofer.cshtml", chofer);
+            return View(pasajero);
         }
 
         [HttpPost]
-        public IActionResult Edit(Chofer chofer)
+        public IActionResult Edit(Pasajero pasajero)
         {
-            if (!EsAdministrador())
+            if (!EsChofer())
             {
                 return RedirectToAction("Index", "Login");
             }
 
             if (!ModelState.IsValid)
             {
-                return View("~/Views/Transporte/EditChofer.cshtml", chofer);
+                return View(pasajero);
             }
 
-            _gestor.EditarChofer(chofer);
-
+            _gestor.EditarPasajero(pasajero);
             return RedirectToAction("Index");
         }
     }

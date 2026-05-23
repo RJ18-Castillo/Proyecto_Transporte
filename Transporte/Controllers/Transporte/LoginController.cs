@@ -7,8 +7,7 @@ namespace Transporte.UI.Controllers
     {
         private readonly IGestorTransporte _gestor;
 
-        public LoginController(
-            IGestorTransporte gestor)
+        public LoginController(IGestorTransporte gestor)
         {
             _gestor = gestor;
         }
@@ -19,27 +18,36 @@ namespace Transporte.UI.Controllers
         }
 
         [HttpPost]
-        public IActionResult Index(
-            string usuario,
-            string clave)
+        public IActionResult Index(string usuario, string clave)
         {
-            var user =
-                _gestor.Login(
-                    usuario,
-                    clave);
+            var user = _gestor.Login(usuario, clave);
 
             if (user == null)
             {
-                ViewBag.Error =
-                    "Credenciales inválidas";
-
-                return View(
-                    "~/Views/Transporte/Login.cshtml");
+                ViewBag.Error = "Usuario o clave incorrectos.";
+                return View();
             }
 
-            return RedirectToAction(
-                "Index",
-                "Chofer");
+            HttpContext.Session.SetInt32("UsuarioId", user.Id);
+            HttpContext.Session.SetString("NombreUsuario", user.NombreUsuario);
+            HttpContext.Session.SetString("Rol", user.Rol);
+
+            if (user.Rol == "Administrador")
+            {
+                return RedirectToAction("Index", "Chofer");
+            }
+
+            if (user.Rol == "Chofer")
+            {
+                return RedirectToAction("Index", "Pasajero");
+            }
+
+            if (user.Rol == "Pasajero")
+            {
+                return RedirectToAction("Index", "MisViaje");
+            }
+
+            return RedirectToAction("Index", "Home");
         }
     }
 }
