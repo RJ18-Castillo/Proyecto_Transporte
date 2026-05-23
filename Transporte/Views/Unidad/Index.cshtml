@@ -1,0 +1,47 @@
+﻿@model List<Transporte.Model.Unidad>
+
+<h1>Unidades</h1>
+
+<a asp-action="Create">Nueva Unidad</a>
+
+<br />
+<br />
+
+<table class="table">
+
+    <thead>
+        <tr>
+            <th>Placa</th>
+            <th>Modelo</th>
+            <th>Año</th>
+            <th>Capacidad</th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+
+                <td>@item.Placa</td>
+
+                <td>@item.Modelo</td>
+
+                <td>@item.AnioFabricacion</td>
+
+                <td>@item.CapacidadPasajeros</td>
+
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">
+                        Editar
+                    </a>
+                </td>
+
+            </tr>
+        }
+
+    </tbody>
+
+</table>

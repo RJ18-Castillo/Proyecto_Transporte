@@ -1,0 +1,60 @@
+﻿@model List<Transporte.Model.Ruta>
+
+<h1>Rutas</h1>
+
+<form method="get">
+
+    <input type="text"
+           name="filtro"
+           value="@ViewBag.Filtro"
+           placeholder="Buscar por nombre o destino" />
+
+    <button type="submit">Buscar</button>
+
+    <a asp-action="Create">Nueva Ruta</a>
+
+</form>
+
+<br />
+
+<table class="table">
+
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Origen</th>
+            <th>Destino</th>
+            <th>Duración</th>
+            <th>Precio Base</th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+
+                <td>@item.Nombre</td>
+
+                <td>@item.Origen</td>
+
+                <td>@item.Destino</td>
+
+                <td>@item.DuracionEstimada</td>
+
+                <td>₡ @item.PrecioBase</td>
+
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">
+                        Editar
+                    </a>
+                </td>
+
+            </tr>
+        }
+
+    </tbody>
+
+</table>

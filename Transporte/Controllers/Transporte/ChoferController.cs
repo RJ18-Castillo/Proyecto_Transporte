@@ -8,75 +8,88 @@ namespace Transporte.UI.Controllers
     {
         private readonly IGestorTransporte _gestor;
 
-        public ChoferController(
-            IGestorTransporte gestor)
+        public ChoferController(IGestorTransporte gestor)
         {
             _gestor = gestor;
         }
 
-        public IActionResult Index(
-            string filtro)
+        private bool EsAdministrador()
         {
-            var lista =
-                _gestor.ListarChoferes(
-                    filtro);
+            return HttpContext.Session.GetString("Rol") == "Administrador";
+        }
 
-            return View(
-                "~/Views/Transporte/Chofer.cshtml",
-                lista);
+        public IActionResult Index(string filtro)
+        {
+            if (!EsAdministrador())
+            {
+                return RedirectToAction("Index", "Login");
+            }
+
+            var lista = _gestor.ListarChoferes(filtro);
+
+            return View("~/Views/Transporte/Chofer.cshtml", lista);
         }
 
         public IActionResult Create()
         {
-            return View(
-                "~/Views/Transporte/CrearChofer.cshtml");
+            if (!EsAdministrador())
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            return View("~/Views/Transporte/CrearChofer.cshtml");
         }
 
         [HttpPost]
-        public IActionResult Create(
-            Chofer chofer)
+        public IActionResult Create(Chofer chofer)
         {
-            if (!ModelState.IsValid)
+            if (!EsAdministrador())
             {
-                return View(
-                    "~/Views/Transporte/CrearChofer.cshtml",
-                    chofer);
+                return RedirectToAction("Index", "Login");
             }
 
-            _gestor.AgregarChofer(
-                chofer);
+            if (!ModelState.IsValid)
+            {
+                return View( "~/Views/Transporte/CrearChofer.cshtml", chofer);
+            }
 
-            return RedirectToAction(
-                "Index");
+            _gestor.AgregarChofer(chofer);
+
+            return RedirectToAction("Index");
         }
 
-        public IActionResult Edit(
-            int id)
+        public IActionResult Edit(int id)
         {
-            var chofer =
-                _gestor.ObtenerChofer(id);
+            if (!EsAdministrador())
+            {
+                return RedirectToAction("Index", "Login");
+            }
 
-            return View(
-                "~/Views/Transporte/EditChofer.cshtml",
-                chofer);
+            var chofer = _gestor.ObtenerChofer(id);
+
+            if (chofer == null)
+            {
+                return NotFound();
+            }
+
+            return View("~/Views/Transporte/EditChofer.cshtml", chofer);
         }
 
         [HttpPost]
-        public IActionResult Edit(
-            Chofer chofer)
+        public IActionResult Edit(Chofer chofer)
         {
-            if (!ModelState.IsValid)
+            if (!EsAdministrador())
             {
-                return View(
-                    "~/Views/Transporte/EditChofer.cshtml",
-                    chofer);
+                return RedirectToAction("Index", "Login");
             }
 
-            _gestor.EditarChofer(
-                chofer);
+            if (!ModelState.IsValid)
+            {
+                return View("~/Views/Transporte/EditChofer.cshtml", chofer);
+            }
 
-            return RedirectToAction(
-                "Index");
+            _gestor.EditarChofer(chofer);
+
+            return RedirectToAction("Index");
         }
     }
 }

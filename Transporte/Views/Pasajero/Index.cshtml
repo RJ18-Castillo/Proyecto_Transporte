@@ -1,0 +1,61 @@
+﻿@model List<Transporte.Model.Pasajero>
+
+@{
+    ViewData["Title"] = "Pasajeros";
+}
+
+<h1>Pasajeros</h1>
+
+<form method="get">
+
+    <input type="text"
+           name="filtro"
+           value="@ViewBag.Filtro"
+           placeholder="Buscar por nombre" />
+
+    <button type="submit">Buscar</button>
+
+    <a asp-action="Create">Nuevo Pasajero</a>
+
+</form>
+
+<br />
+
+<table class="table">
+
+    <thead>
+        <tr>
+            <th>Identificación</th>
+            <th>Nombre</th>
+            <th>Apellidos</th>
+            <th>Correo</th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+
+                <td>@item.Identificacion</td>
+
+                <td>@item.Nombre</td>
+
+                <td>@item.Apellidos</td>
+
+                <td>@item.Correo</td>
+
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">
+                        Editar
+                    </a>
+                </td>
+
+            </tr>
+        }
+
+    </tbody>
+
+</table>

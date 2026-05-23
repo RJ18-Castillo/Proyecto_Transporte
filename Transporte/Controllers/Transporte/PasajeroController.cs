@@ -14,8 +14,18 @@ namespace Transporte.UI.Controllers.Transporte
             _gestor = gestor;
         }
 
+        private bool EsChofer()
+        {
+            return HttpContext.Session.GetString("Rol") == "Chofer";
+        }
+
         public IActionResult Index(string filtro)
         {
+            if (!EsChofer())
+            {
+                return RedirectToAction("Index", "Login");
+            }
+
             ViewBag.Filtro = filtro;
             var pasajeros = _gestor.ListarPasajeros(filtro);
             return View(pasajeros);
@@ -23,12 +33,22 @@ namespace Transporte.UI.Controllers.Transporte
 
         public IActionResult Create()
         {
+            if (!EsChofer())
+            {
+                return RedirectToAction("Index", "Login");
+            }
+
             return View();
         }
 
         [HttpPost]
         public IActionResult Create(Pasajero pasajero)
         {
+            if (!EsChofer())
+            {
+                return RedirectToAction("Index", "Login");
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(pasajero);
@@ -40,6 +60,11 @@ namespace Transporte.UI.Controllers.Transporte
 
         public IActionResult Edit(int id)
         {
+            if (!EsChofer())
+            {
+                return RedirectToAction("Index", "Login");
+            }
+
             var pasajero = _gestor.ObtenerPasajero(id);
 
             if (pasajero == null)
@@ -53,6 +78,11 @@ namespace Transporte.UI.Controllers.Transporte
         [HttpPost]
         public IActionResult Edit(Pasajero pasajero)
         {
+            if (!EsChofer())
+            {
+                return RedirectToAction("Index", "Login");
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(pasajero);
