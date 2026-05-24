@@ -22,7 +22,8 @@ namespace Transporte.UI.Controllers
         {
             if (!EsAdministrador())
             {
-                return RedirectToAction("Index", "Login");
+                ViewBag.Mensaje = "No posee permisos para realizar esta acción.";
+                return View("~/Views/Transporte/SinPermisos.cshtml");
             }
 
             var lista = _gestor.ListarChoferes(filtro);
@@ -34,8 +35,10 @@ namespace Transporte.UI.Controllers
         {
             if (!EsAdministrador())
             {
-                return RedirectToAction("Index", "Login");
+                ViewBag.Mensaje = "No posee permisos para realizar esta acción.";
+                return View("~/Views/Transporte/SinPermisos.cshtml");
             }
+
             return View("~/Views/Transporte/CrearChofer.cshtml");
         }
 
@@ -44,7 +47,8 @@ namespace Transporte.UI.Controllers
         {
             if (!EsAdministrador())
             {
-                return RedirectToAction("Index", "Login");
+                ViewBag.Mensaje = "No posee permisos para realizar esta acción.";
+                return View("~/Views/Transporte/SinPermisos.cshtml");
             }
 
             if (!ModelState.IsValid)
@@ -61,7 +65,8 @@ namespace Transporte.UI.Controllers
         {
             if (!EsAdministrador())
             {
-                return RedirectToAction("Index", "Login");
+                ViewBag.Mensaje = "No posee permisos para realizar esta acción.";
+                return View("~/Views/Transporte/SinPermisos.cshtml");
             }
 
             var chofer = _gestor.ObtenerChofer(id);
@@ -79,7 +84,8 @@ namespace Transporte.UI.Controllers
         {
             if (!EsAdministrador())
             {
-                return RedirectToAction("Index", "Login");
+                ViewBag.Mensaje = "No posee permisos para realizar esta acción.";
+                return View("~/Views/Transporte/SinPermisos.cshtml");
             }
 
             if (!ModelState.IsValid)

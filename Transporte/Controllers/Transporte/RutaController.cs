@@ -14,8 +14,24 @@ namespace Transporte.UI.Controllers.Transporte
             _gestor = gestor;
         }
 
+        private bool EsChoferOAdministrador()
+        {
+            if (HttpContext.Session.GetString("Rol") == "Chofer" ||
+                HttpContext.Session.GetString("Rol") == "Administrador")
+            {
+                return true;
+            }
+            return false;
+        }
+
         public IActionResult Index(string filtro)
         {
+            if (!EsChoferOAdministrador())
+            {
+                ViewBag.Mensaje = "No posee permisos para realizar esta acción.";
+                return View("~/Views/Transporte/SinPermisos.cshtml");
+            }
+
             ViewBag.Filtro = filtro;
             var rutas = _gestor.ListarRutas(filtro);
             return View(rutas);
@@ -23,12 +39,24 @@ namespace Transporte.UI.Controllers.Transporte
 
         public IActionResult Create()
         {
+            if (!EsChoferOAdministrador())
+            {
+                ViewBag.Mensaje = "No posee permisos para realizar esta acción.";
+                return View("~/Views/Transporte/SinPermisos.cshtml");
+            }
+
             return View();
         }
 
         [HttpPost]
         public IActionResult Create(Ruta ruta)
         {
+            if (!EsChoferOAdministrador())
+            {
+                ViewBag.Mensaje = "No posee permisos para realizar esta acción.";
+                return View("~/Views/Transporte/SinPermisos.cshtml");
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(ruta);
@@ -40,6 +68,12 @@ namespace Transporte.UI.Controllers.Transporte
 
         public IActionResult Edit(int id)
         {
+            if (!EsChoferOAdministrador())
+            {
+                ViewBag.Mensaje = "No posee permisos para realizar esta acción.";
+                return View("~/Views/Transporte/SinPermisos.cshtml");
+            }
+
             var ruta = _gestor.ObtenerRuta(id);
 
             if (ruta == null)
@@ -53,6 +87,12 @@ namespace Transporte.UI.Controllers.Transporte
         [HttpPost]
         public IActionResult Edit(Ruta ruta)
         {
+            if (!EsChoferOAdministrador())
+            {
+                ViewBag.Mensaje = "No posee permisos para realizar esta acción.";
+                return View("~/Views/Transporte/SinPermisos.cshtml");
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(ruta);

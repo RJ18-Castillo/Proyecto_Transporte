@@ -23,7 +23,8 @@ namespace Transporte.UI.Controllers.Transporte
         {
             if (!EsChofer())
             {
-                return RedirectToAction("Index", "Login");
+                ViewBag.Mensaje = "No posee permisos para realizar esta acción.";
+                return View("~/Views/Transporte/SinPermisos.cshtml");
             }
 
             ViewBag.Filtro = filtro;
@@ -35,7 +36,8 @@ namespace Transporte.UI.Controllers.Transporte
         {
             if (!EsChofer())
             {
-                return RedirectToAction("Index", "Login");
+                ViewBag.Mensaje = "No posee permisos para realizar esta acción.";
+                return View("~/Views/Transporte/SinPermisos.cshtml");
             }
 
             return View();
@@ -46,7 +48,8 @@ namespace Transporte.UI.Controllers.Transporte
         {
             if (!EsChofer())
             {
-                return RedirectToAction("Index", "Login");
+                ViewBag.Mensaje = "No posee permisos para realizar esta acción.";
+                return View("~/Views/Transporte/SinPermisos.cshtml");
             }
 
             if (!ModelState.IsValid)
@@ -62,7 +65,8 @@ namespace Transporte.UI.Controllers.Transporte
         {
             if (!EsChofer())
             {
-                return RedirectToAction("Index", "Login");
+                ViewBag.Mensaje = "No posee permisos para realizar esta acción.";
+                return View("~/Views/Transporte/SinPermisos.cshtml");
             }
 
             var pasajero = _gestor.ObtenerPasajero(id);
@@ -80,7 +84,8 @@ namespace Transporte.UI.Controllers.Transporte
         {
             if (!EsChofer())
             {
-                return RedirectToAction("Index", "Login");
+                ViewBag.Mensaje = "No posee permisos para realizar esta acción.";
+                return View("~/Views/Transporte/SinPermisos.cshtml");
             }
 
             if (!ModelState.IsValid)
