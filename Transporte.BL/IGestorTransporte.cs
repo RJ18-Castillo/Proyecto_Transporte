@@ -31,5 +31,13 @@ namespace Transporte.BL
         bool ExistePlaca(string placa, int idIgnorar = 0);
         bool AgregarUnidad(Unidad unidad);
         bool EditarUnidad(Unidad unidad);
-    }
+
+        List<Viaje> ListarViajes(string filtro, DateTime? fecha);
+        Viaje? ObtenerViajePorId(int id);
+        void AgregarViaje(Viaje viaje);
+        void EditarViaje(Viaje viaje);
+        void IniciarViaje(int id);
+        void CancelarViaje(int id, string motivoCancelacion);
+        void CompletarViaje(int id);
+            }
 }

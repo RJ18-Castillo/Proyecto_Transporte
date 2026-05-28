@@ -1,0 +1,102 @@
+@model List<Transporte.Model.Viaje>
+
+@{
+    ViewData["Title"] = "Viajes";
+}
+
+<h1>Viajes</h1>
+
+<form method="get">
+
+    <input type="text"
+           name="filtro"
+           value="@ViewBag.Filtro"
+           placeholder="Buscar por ruta" />
+
+    <input type="date"
+           name="fecha"
+           value="@ViewBag.Fecha" />
+
+    <button type="submit">Buscar</button>
+
+    <a asp-action="Index">Limpiar</a>
+
+    <a asp-action="Create">Nuevo Viaje</a>
+
+</form>
+
+<br />
+
+<table class="table">
+
+    <thead>
+        <tr>
+            <th>N° Viaje</th>
+            <th>Ruta</th>
+            <th>Placa</th>
+            <th>Chofer</th>
+            <th>Salida</th>
+            <th>Llegada</th>
+            <th>Estado</th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Id</td>
+
+                <td>@item.NombreRuta</td>
+
+                <td>@item.PlacaUnidad</td>
+
+                <td>@item.NombreChofer</td>
+
+                <td>@item.FechaHoraSalida.ToString("dd/MM/yyyy HH:mm")</td>
+
+                <td>@item.FechaHoraLlegadaEstimada.ToString("dd/MM/yyyy HH:mm")</td>
+
+                <td>@item.Estado</td>
+
+                <td>
+
+                    @if (item.Estado == "Programado")
+                    {
+                        <a asp-action="Edit"
+                        asp-route-id="@item.Id">
+                            Editar
+                        </a>
+
+                        <span> | </span>
+
+                        <a asp-action="Iniciar"
+                        asp-route-id="@item.Id">
+                            Iniciar Viaje
+                        </a>
+
+                        <span> | </span>
+
+                        <a asp-action="Cancelar"
+                        asp-route-id="@item.Id">
+                            Cancelar
+                        </a>
+                    }
+
+                    else if (item.Estado == "En Curso")
+                    {
+                        <a asp-action="Completar"
+                        asp-route-id="@item.Id">
+                            Finalizar Viaje
+                        </a>
+                    }
+
+                </td>
+            </tr>
+        }
+
+    </tbody>
+
+</table>

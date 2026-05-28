@@ -304,5 +304,167 @@ namespace Transporte.BL
 
             return true;
         }
+        public List<Viaje> ListarViajes(string filtro, DateTime? fecha)
+        {
+            var viajes = _context.Viajes
+                .Select(v => new Viaje
+                {
+                    Id = v.Id,
+                    RutaId = v.RutaId,
+                    UnidadId = v.UnidadId,
+                    ChoferId = v.ChoferId,
+                    EstadoViajeId = v.EstadoViajeId,
+                    FechaHoraSalida = v.FechaHoraSalida,
+                    FechaHoraLlegadaEstimada = v.FechaHoraLlegadaEstimada,
+                    MotivoCancelacion = v.MotivoCancelacion,
+                    FechaCancelacion = v.FechaCancelacion
+                })
+                .ToList();
+
+            foreach (var viaje in viajes)
+            {
+                var ruta = _context.Rutas.Find(viaje.RutaId);
+                var unidad = _context.Unidades.Find(viaje.UnidadId);
+                var chofer = _context.Choferes.Find(viaje.ChoferId);
+                var estado = _context.EstadosViaje.Find(viaje.EstadoViajeId);
+
+                viaje.NombreRuta = ruta != null ? ruta.Nombre : "";
+                viaje.PlacaUnidad = unidad != null ? unidad.Placa : "";
+                viaje.NombreChofer = chofer != null ? chofer.Nombre + " " + chofer.Apellidos : "";
+                viaje.Estado = estado != null ? estado.Nombre : "";
+            }
+
+            if (!string.IsNullOrEmpty(filtro))
+            {
+                viajes = viajes
+                    .Where(v =>
+                        v.NombreRuta.Contains(filtro) ||
+                        v.PlacaUnidad.Contains(filtro) ||
+                        v.NombreChofer.Contains(filtro))
+                    .ToList();
+            }
+            if (fecha.HasValue)
+                {
+                    viajes = viajes
+                        .Where(v => v.FechaHoraSalida.Date == fecha.Value.Date)
+                        .ToList();
+                }
+            return viajes;
+        }
+
+public Viaje? ObtenerViajePorId(int id)
+{
+    return _context.Viajes
+        .Where(v => v.Id == id)
+        .Select(v => new Viaje
+        {
+            Id = v.Id,
+            RutaId = v.RutaId,
+            UnidadId = v.UnidadId,
+            ChoferId = v.ChoferId,
+            EstadoViajeId = v.EstadoViajeId,
+            FechaHoraSalida = v.FechaHoraSalida,
+            FechaHoraLlegadaEstimada = v.FechaHoraLlegadaEstimada,
+            MotivoCancelacion = v.MotivoCancelacion,
+            FechaCancelacion = v.FechaCancelacion
+        })
+        .FirstOrDefault();
+}
+
+public void AgregarViaje(Viaje viaje)
+{
+    bool choferOcupado = _context.Viajes.Any(v =>
+        v.ChoferId == viaje.ChoferId &&
+        (v.EstadoViajeId == 1 || v.EstadoViajeId == 2) &&
+        viaje.FechaHoraSalida < v.FechaHoraLlegadaEstimada &&
+        viaje.FechaHoraLlegadaEstimada > v.FechaHoraSalida
+    );
+
+    bool unidadOcupada = _context.Viajes.Any(v =>
+        v.UnidadId == viaje.UnidadId &&
+        (v.EstadoViajeId == 1 || v.EstadoViajeId == 2) &&
+        viaje.FechaHoraSalida < v.FechaHoraLlegadaEstimada &&
+        viaje.FechaHoraLlegadaEstimada > v.FechaHoraSalida
+    );
+
+    if (choferOcupado)
+        throw new Exception("El chofer ya tiene un viaje activo en ese rango de fechas.");
+
+    if (unidadOcupada)
+        throw new Exception("La unidad ya tiene un viaje activo en ese rango de fechas.");
+
+    viaje.EstadoViajeId = 1;
+
+    _context.Viajes.Add(viaje);
+
+    _context.SaveChanges();
+}
+
+public void EditarViaje(Viaje viaje)
+{
+    var viajeBD = _context.Viajes.Find(viaje.Id);
+
+    if (viajeBD == null)
+        throw new Exception("El viaje no existe.");
+
+    if (viajeBD.EstadoViajeId != 1)
+        throw new Exception("Solo se pueden editar viajes en estado Programado.");
+
+    viajeBD.RutaId = viaje.RutaId;
+    viajeBD.UnidadId = viaje.UnidadId;
+    viajeBD.ChoferId = viaje.ChoferId;
+    viajeBD.EstadoViajeId = viaje.EstadoViajeId;
+    viajeBD.FechaHoraSalida = viaje.FechaHoraSalida;
+    viajeBD.FechaHoraLlegadaEstimada = viaje.FechaHoraLlegadaEstimada;
+
+    _context.SaveChanges();
+}
+
+public void IniciarViaje(int id)
+{
+    var viaje = _context.Viajes.Find(id);
+
+    if (viaje == null)
+        throw new Exception("El viaje no existe.");
+
+    if (viaje.EstadoViajeId != 1)
+        throw new Exception("Solo se pueden iniciar viajes en estado Programado.");
+
+    viaje.EstadoViajeId = 2;
+    _context.SaveChanges();
+}
+
+        public void CancelarViaje(int id, string motivoCancelacion)
+        {
+            var viaje = _context.Viajes.Find(id);
+
+            if (viaje == null)
+                throw new Exception("El viaje no existe.");
+
+            if (viaje.EstadoViajeId != 1)
+                throw new Exception("Solo se pueden cancelar viajes en estado Programado.");
+
+            viaje.EstadoViajeId = 4;
+            viaje.MotivoCancelacion = motivoCancelacion;
+            viaje.FechaCancelacion = DateTime.Now;
+
+            _context.SaveChanges();
+        }
+        public void CompletarViaje(int id)
+            {
+                var viaje = _context.Viajes.Find(id);
+
+                if (viaje == null)
+                    throw new Exception("El viaje no existe.");
+
+                // Solo viajes en curso
+                if (viaje.EstadoViajeId != 2)
+                    throw new Exception("Solo se pueden completar viajes en curso.");
+
+                // 3 = Completado
+                viaje.EstadoViajeId = 3;
+
+                _context.SaveChanges();
+            }
     }
 }

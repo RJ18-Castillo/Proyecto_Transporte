@@ -1,0 +1,86 @@
+@model Transporte.Model.Viaje
+
+<h1>Editar Viaje</h1>
+
+<form asp-action="Edit">
+
+    <input type="hidden" asp-for="Id" />
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">
+            @ViewBag.Error
+        </div>
+    }
+
+    <div>
+        <label>Ruta</label>
+
+        <select asp-for="RutaId"
+                asp-items="ViewBag.Rutas"
+                class="form-control">
+
+            <option value="">
+                Seleccione una ruta
+            </option>
+
+        </select>
+    </div>
+
+    <div>
+        <label>Unidad</label>
+
+        <select asp-for="UnidadId"
+                asp-items="ViewBag.Unidades"
+                class="form-control">
+
+            <option value="">
+                Seleccione una unidad
+            </option>
+
+        </select>
+    </div>
+
+    <div>
+        <label>Chofer</label>
+
+        <select asp-for="ChoferId"
+                asp-items="ViewBag.Choferes"
+                class="form-control">
+
+            <option value="">
+                Seleccione un chofer
+            </option>
+
+        </select>
+    </div>
+
+    <div>
+        <label>Fecha y hora de salida</label>
+
+        <input asp-for="FechaHoraSalida"
+               type="datetime-local"
+               class="form-control" />
+    </div>
+
+    <div>
+        <label>Fecha y hora estimada de llegada</label>
+
+        <input asp-for="FechaHoraLlegadaEstimada"
+               type="datetime-local"
+               class="form-control" />
+    </div>
+
+    <br />
+
+    <button type="submit"
+            class="btn btn-primary">
+        Guardar Cambios
+    </button>
+
+    <a asp-action="Index"
+       class="btn btn-secondary">
+        Volver
+    </a>
+
+</form>

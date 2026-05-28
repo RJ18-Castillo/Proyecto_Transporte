@@ -1,0 +1,39 @@
+@model Transporte.Model.Viaje
+
+<h1>Cancelar Viaje</h1>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">
+        @ViewBag.Error
+    </div>
+}
+
+<form asp-action="Cancelar" method="post">
+
+    <input type="hidden" asp-for="Id" />
+
+    <p>
+        ¿Está seguro que desea cancelar el viaje número
+        <strong>@Model.Id</strong>?
+    </p>
+
+    <div>
+        <label>Motivo de cancelación</label>
+
+        <textarea name="motivoCancelacion"
+                  class="form-control"
+                  required></textarea>
+    </div>
+
+    <br />
+
+    <button type="submit" class="btn btn-danger">
+        Cancelar Viaje
+    </button>
+
+    <a asp-action="Index" class="btn btn-secondary">
+        Volver
+    </a>
+
+</form>

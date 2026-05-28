@@ -13,6 +13,10 @@ namespace Transporte.DA
         public DbSet<Ruta> Rutas { get; set; }
         public DbSet<Unidad> Unidades { get; set; }
 
+        public DbSet<Viaje> Viajes { get; set; }
+        public DbSet<EstadoViaje> EstadosViaje { get; set; }
+        
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Usuario>()
