@@ -36,9 +36,17 @@
                             <a class="nav-link text-dark" asp-controller="Unidad" asp-action="Index">Unidades</a>
                         </li>
 
-                         <li class="nav-item">
+                        <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Viaje" asp-action="Index">Viajes</a>
-                         </li>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Viaje" asp-action="Cancelados">Viajes Cancelados</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Reservas" asp-action="MisReservas">Mis Reservas</a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -61,3 +69,4 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+

@@ -1,0 +1,35 @@
+﻿@model IEnumerable<Transporte.Model.Reserva>
+
+@{
+    ViewData["Title"] = "Mis Reservas";
+}
+
+<h2>Mis Reservas</h2>
+
+<table class="table table-striped table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>Estado del viaje</th>
+            <th>Ruta</th>
+            <th>Asiento</th>
+            <th>Fecha salida</th>
+            <th>Monto pagado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var reserva in Model)
+        {
+            <tr>
+                <td>@reserva.Viaje.Estado</td>
+                <td>@reserva.Viaje.NombreRuta</td>
+                <td>@reserva.NumeroAsiento</td>
+                <td>@reserva.Viaje.FechaHoraSalida.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@reserva.MontoPagado.ToString("C")</td>
+                <td>
+                    <a asp-action="DetalleReserva" asp-route-id="@reserva.Id" class="btn btn-info btn-sm">Ver detalle</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

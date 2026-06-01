@@ -125,7 +125,25 @@ public IActionResult Cancelar(int id, string motivoCancelacion)
         return View(viaje);
     }
 }
-       private void CargarListas()
+
+        public IActionResult Cancelados()
+        {
+            var viajes = _gestor.ListarViajesCancelados();
+            return View(viajes);
+        }
+
+        public IActionResult DetalleCancelado(int id)
+        {
+            var viaje = _gestor.ObtenerViajePorId(id);
+
+            if (viaje == null || viaje.EstadoViajeId != 4) // 4 = Cancelado
+                return NotFound();
+
+            return View(viaje);
+        }
+
+
+        private void CargarListas()
             {
                 var rutas = _gestor.ListarRutas("");
                 var unidades = _gestor.ListarUnidades();

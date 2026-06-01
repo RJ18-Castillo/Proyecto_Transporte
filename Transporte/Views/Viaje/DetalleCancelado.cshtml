@@ -1,0 +1,20 @@
+﻿@model Transporte.Model.Viaje
+
+@{
+    ViewData["Title"] = "Detalle del Viaje Cancelado";
+}
+
+<h2>Detalle del Viaje Cancelado</h2>
+
+<div class="card">
+    <div class="card-body">
+        <p><strong>Ruta:</strong> @Model.NombreRuta</p>
+        <p><strong>Unidad:</strong> @Model.PlacaUnidad</p>
+        <p><strong>Chofer:</strong> @Model.NombreChofer</p>
+        <p><strong>Fecha salida:</strong> @Model.FechaHoraSalida.ToString("dd/MM/yyyy HH:mm")</p>
+        <p><strong>Motivo de cancelación:</strong> @Model.MotivoCancelacion</p>
+        <p><strong>Fecha de cancelación:</strong> @Model.FechaCancelacion?.ToString("dd/MM/yyyy HH:mm")</p>
+    </div>
+</div>
+
+<a asp-action="Cancelados" class="btn btn-secondary mt-3">Volver al listado</a>

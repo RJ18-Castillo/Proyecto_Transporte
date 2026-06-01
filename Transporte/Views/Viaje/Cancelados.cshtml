@@ -1,0 +1,29 @@
+﻿@model IEnumerable<Transporte.Model.Viaje>
+
+<h2>Viajes Cancelados</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Número</th>
+            <th>Ruta</th>
+            <th>Unidad</th>
+            <th>Chofer</th>
+            <th>Fecha salida</th>
+            <th>Motivo</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var viaje in Model)
+        {
+            <tr>
+                <td>@viaje.Id</td>
+                <td>@viaje.NombreRuta</td>
+                <td>@viaje.PlacaUnidad</td>
+                <td>@viaje.NombreChofer</td>
+                <td>@viaje.FechaHoraSalida.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@viaje.MotivoCancelacion</td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,21 @@
+﻿@model Transporte.Model.Reserva
+
+@{
+    ViewData["Title"] = "Detalle de Reserva";
+}
+
+<h2>Detalle de Reserva</h2>
+
+<div class="card">
+    <div class="card-body">
+        <p><strong>Ruta:</strong> @Model.Viaje.NombreRuta</p>
+        <p><strong>Unidad:</strong> @Model.Viaje.PlacaUnidad</p>
+        <p><strong>Chofer:</strong> @Model.Viaje.NombreChofer</p>
+        <p><strong>Fecha salida:</strong> @Model.Viaje.FechaHoraSalida.ToString("dd/MM/yyyy HH:mm")</p>
+        <p><strong>Número de asiento:</strong> @Model.NumeroAsiento</p>
+        <p><strong>Monto pagado:</strong> @Model.MontoPagado.ToString("C")</p>
+    </div>
+</div>
+
+<a asp-action="MisReservas" class="btn btn-secondary mt-3">Volver al listado</a>
+
