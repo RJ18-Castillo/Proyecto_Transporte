@@ -450,6 +450,39 @@ public void IniciarViaje(int id)
 
             _context.SaveChanges();
         }
+
+        public List<Viaje> ListarViajesCancelados()
+        {
+            var viajesCancelados = _context.Viajes
+                .Where(v => v.EstadoViajeId == 4) // 4 = Cancelado
+                .Select(v => new Viaje
+                {
+                    Id = v.Id,
+                    RutaId = v.RutaId,
+                    UnidadId = v.UnidadId,
+                    ChoferId = v.ChoferId,
+                    EstadoViajeId = v.EstadoViajeId,
+                    FechaHoraSalida = v.FechaHoraSalida,
+                    MotivoCancelacion = v.MotivoCancelacion,
+                    FechaCancelacion = v.FechaCancelacion
+                })
+                .ToList();
+
+            foreach (var viaje in viajesCancelados)
+            {
+                var ruta = _context.Rutas.Find(viaje.RutaId);
+                var unidad = _context.Unidades.Find(viaje.UnidadId);
+                var chofer = _context.Choferes.Find(viaje.ChoferId);
+
+                viaje.NombreRuta = ruta?.Nombre ?? "";
+                viaje.PlacaUnidad = unidad?.Placa ?? "";
+                viaje.NombreChofer = chofer != null ? $"{chofer.Nombre} {chofer.Apellidos}" : "";
+                viaje.Estado = "Cancelado";
+            }
+
+            return viajesCancelados;
+        }
+
         public void CompletarViaje(int id)
             {
                 var viaje = _context.Viajes.Find(id);
