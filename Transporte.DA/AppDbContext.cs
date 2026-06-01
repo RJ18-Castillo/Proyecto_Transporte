@@ -15,7 +15,9 @@ namespace Transporte.DA
 
         public DbSet<Viaje> Viajes { get; set; }
         public DbSet<EstadoViaje> EstadosViaje { get; set; }
-        
+
+        public DbSet<Reserva> Reservas { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

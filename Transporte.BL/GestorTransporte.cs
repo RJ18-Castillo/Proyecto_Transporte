@@ -1,4 +1,5 @@
-﻿using Transporte.DA;
+﻿using Microsoft.EntityFrameworkCore;
+using Transporte.DA;
 using Transporte.Model;
 
 namespace Transporte.BL
@@ -498,6 +499,28 @@ public void IniciarViaje(int id)
                 viaje.EstadoViajeId = 3;
 
                 _context.SaveChanges();
-            }
+        }
+
+        public List<Reserva> ListarReservasPorPasajero(int pasajeroId)
+        {
+            return _context.Reservas
+                .Where(r => r.PasajeroId == pasajeroId)
+                .Include(r => r.Viaje)
+                .ThenInclude(v => v.Ruta)
+                .Include(r => r.Viaje.Unidad)
+                .Include(r => r.Viaje.Chofer)
+                .ToList();
+        }
+
+        public Reserva? ObtenerDetalleReserva(int reservaId)
+        {
+            return _context.Reservas
+                .Include(r => r.Viaje)
+                .ThenInclude(v => v.Ruta)
+                .Include(r => r.Viaje.Unidad)
+                .Include(r => r.Viaje.Chofer)
+                .FirstOrDefault(r => r.Id == reservaId);
+        }
+
     }
 }

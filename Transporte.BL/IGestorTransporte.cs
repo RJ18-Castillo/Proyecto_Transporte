@@ -39,5 +39,11 @@ namespace Transporte.BL
         void IniciarViaje(int id);
         void CancelarViaje(int id, string motivoCancelacion);
         void CompletarViaje(int id);
-            }
+
+        List<Viaje> ListarViajesCancelados();
+
+        List<Reserva> ListarReservasPorPasajero(int pasajeroId);
+        Reserva? ObtenerDetalleReserva(int reservaId);
+
+    }
 }

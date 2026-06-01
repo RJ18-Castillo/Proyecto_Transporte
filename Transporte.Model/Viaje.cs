@@ -11,6 +11,12 @@ namespace Transporte.Model
         public int ChoferId { get; set; }
         public int EstadoViajeId { get; set; }
 
+        // Navegación a entidades relacionadas (necesarias para Include/ThenInclude)
+        public Ruta? Ruta { get; set; }
+        public Unidad? Unidad { get; set; }
+        public Chofer? Chofer { get; set; }
+        public EstadoViaje? EstadoViaje { get; set; }
+
         public DateTime FechaHoraSalida { get; set; }
         public DateTime FechaHoraLlegadaEstimada { get; set; }
 

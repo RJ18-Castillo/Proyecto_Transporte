@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Transporte.DA.Context;
-using Transporte.BL.Interfaces;
-using Transporte.BL.Services;
+using Transporte.DA;
+using Transporte.BL;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
