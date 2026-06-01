@@ -12,21 +12,28 @@ namespace Transporte.UI.Controllers
             _gestor = gestor;
         }
 
+        [HttpGet]
         public IActionResult Index()
         {
             return View("~/Views/Transporte/Login.cshtml");
         }
 
         [HttpPost]
-        public IActionResult Index(string usuario, string clave)
+        public async Task<IActionResult> Index(string usuario, string clave)
         {
             var user = _gestor.Login(usuario, clave);
 
             if (user == null)
             {
                 ViewBag.Error = "Usuario o clave incorrectos.";
-                return View();
+                return View("~/Views/Transporte/Login.cshtml");
             }
+
+            var correoService = new CorreoService();
+
+            await correoService.EnviarInicioSesion(
+                user.Correo,
+                user.NombreUsuario);
 
             HttpContext.Session.SetInt32("UsuarioId", user.Id);
             HttpContext.Session.SetString("NombreUsuario", user.NombreUsuario);
@@ -48,6 +55,12 @@ namespace Transporte.UI.Controllers
             }
 
             return RedirectToAction("Index", "Home");
+        }
+
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction("Index");
         }
     }
 }
