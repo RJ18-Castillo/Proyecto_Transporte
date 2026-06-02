@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
+using Microsoft.EntityFrameworkCore;
 using Transporte.DA;
 using Transporte.Model;
 
@@ -8,6 +11,9 @@ namespace Transporte.BL
     {
         private readonly AppDbContext _context;
 
+        private const string CorreoEmisor = "transportesticobus@gmail.com";
+        private const string ClaveAplicacion = "crlteimnkhukmgqh";
+
         public GestorTransporte(AppDbContext context)
         {
             _context = context;
@@ -15,144 +21,167 @@ namespace Transporte.BL
 
         public Usuario Login(string usuario, string clave)
         {
-            Usuario user = _context.Usuarios.FirstOrDefault(user => user.NombreUsuario == usuario);
+            var user = _context.Usuarios.FirstOrDefault(u => u.NombreUsuario == usuario);
 
             if (user == null)
-            {
                 return null;
-            }
 
-            // VALIDAR BLOQUEO
-
-            if (user.Rol != "Administrador")
+            if (user.Bloqueado)
             {
-                if (user.Bloqueado)
-                {
-                    if (user.FechaBloqueo.HasValue)
-                    {
-                        DateTime desbloqueo = user.FechaBloqueo.Value.AddMinutes(3);
+                if (user.FechaBloqueo.HasValue &&
+                    DateTime.Now < user.FechaBloqueo.Value.AddMinutes(3))
+                    return null;
 
-                        if (DateTime.Now < desbloqueo)
-                        {
-                            return null;
-                        }
-                        else
-                        {
-                            user.Bloqueado = false;
-
-                            user.IntentosFallidos = 0;
-
-                            _context.SaveChanges();
-                        }
-                    }
-                }
+                user.Bloqueado = false;
+                user.IntentosFallidos = 0;
             }
-
-            // VALIDAR CLAVE
 
             if (user.Clave != clave)
             {
-                if (user.Rol != "Administrador")
+                user.IntentosFallidos++;
+
+                if (user.IntentosFallidos >= 2)
                 {
-                    user.IntentosFallidos++;
-
-                    if (user.IntentosFallidos >= 2)
-                    {
-                        user.Bloqueado = true;
-
-                        user.FechaBloqueo = DateTime.Now;
-                    }
-
-                    _context.SaveChanges();
+                    user.Bloqueado = true;
+                    user.FechaBloqueo = DateTime.Now;
                 }
 
+                _context.SaveChanges();
                 return null;
             }
 
-            // LOGIN CORRECTO
-
             user.IntentosFallidos = 0;
-
             user.Bloqueado = false;
 
             _context.SaveChanges();
+
+            // 🔥 CORREO PROFESIONAL LOGIN
+            EnviarCorreo(
+                user.Correo,
+                "Seguridad - Inicio de sesión detectado",
+                $@"Estimado/a {user.NombreUsuario},
+
+Le informamos que se ha realizado un inicio de sesión en su cuenta del sistema Gestor de Transporte.
+
+Detalles del acceso:
+- Fecha: {DateTime.Now:dd/MM/yyyy}
+- Hora: {DateTime.Now:HH:mm:ss}
+
+Si usted reconoce esta actividad, no es necesario realizar ninguna acción.
+
+En caso contrario, le recomendamos cambiar su contraseña de inmediato y comunicarse con el administrador del sistema.
+
+Atentamente,
+Sistema Gestor de Transporte
+
+Este es un mensaje automático, por favor no responder."
+            );
 
             return user;
         }
 
         public bool CambiarClave(string usuario, string claveActual, string claveNueva)
         {
-            Usuario user = _context.Usuarios.FirstOrDefault(user=> user.NombreUsuario == usuario);
+            var user = _context.Usuarios.FirstOrDefault(u => u.NombreUsuario == usuario);
 
-            if (user == null)
-            {
+            if (user == null || user.Clave != claveActual)
                 return false;
-            }
-
-            if (user.Clave != claveActual)
-            {
-                return false;
-            }
 
             user.Clave = claveNueva;
 
             _context.SaveChanges();
+
+            // 🔥 CORREO CAMBIO DE CLAVE
+            EnviarCorreo(
+                user.Correo,
+                $"Cambio de clave — {user.NombreUsuario}",
+                $@"Estimado/a {user.NombreUsuario},
+
+Le confirmamos que la contraseña de su cuenta ha sido actualizada correctamente.
+
+Detalles del cambio:
+- Fecha: {DateTime.Now:dd/MM/yyyy}
+- Hora: {DateTime.Now:HH:mm:ss}
+
+Si usted no realizó este cambio, le recomendamos comunicarse de inmediato con el administrador del sistema.
+
+Atentamente,
+Sistema Gestor de Transporte
+
+Este es un mensaje automático, por favor no responder."
+            );
 
             return true;
         }
 
         public List<Chofer> ListarChoferes(string filtro)
         {
-            IQueryable<Chofer> query = _context.Choferes;
+            var query = _context.Choferes.AsQueryable();
 
             if (!string.IsNullOrEmpty(filtro))
-            {
-                query = query.Where(chofer => chofer.Nombre.Contains(filtro));
-            }
+                query = query.Where(c => c.Nombre.Contains(filtro));
 
             return query.ToList();
         }
 
         public Chofer ObtenerChofer(int id)
         {
-            return _context.Choferes.FirstOrDefault(chofer => chofer.Id == id);
+            return _context.Choferes.Find(id);
         }
 
         public void AgregarChofer(Chofer chofer)
         {
-            string claveTemporal = Guid.NewGuid().ToString().Substring(0, 8);
+            string clave = Guid.NewGuid().ToString().Substring(0, 8);
 
-            Usuario usuario = new Usuario
-                {
-                    NombreUsuario = chofer.Correo,
-                    Clave = claveTemporal,
-                    Correo = chofer.Correo,
-                    Rol = "Chofer"
-                };
+            var usuario = new Usuario
+            {
+                NombreUsuario = chofer.Correo,
+                Clave = clave,
+                Correo = chofer.Correo,
+                Rol = "Chofer",
+                IntentosFallidos = 0,
+                Bloqueado = false
+            };
 
             _context.Usuarios.Add(usuario);
-
             _context.SaveChanges();
 
             chofer.UsuarioId = usuario.Id;
 
             _context.Choferes.Add(chofer);
-
             _context.SaveChanges();
+
+            // 🔥 CORREO CON CREDENCIALES
+            EnviarCorreo(
+                chofer.Correo,
+                "Creación de cuenta - Gestor de Transporte",
+                $@"Estimado/a {chofer.Nombre},
+
+Su cuenta ha sido creada en el sistema Gestor de Transporte.
+
+Credenciales de acceso:
+- Usuario: {chofer.Correo}
+- Contraseña temporal: {clave}
+
+Por seguridad, se recomienda cambiar su contraseña al iniciar sesión.
+
+Atentamente,
+Sistema Gestor de Transporte
+
+Este es un mensaje automático, por favor no responder."
+            );
         }
 
         public void EditarChofer(Chofer chofer)
         {
-            Chofer existente = _context.Choferes.FirstOrDefault(choferConsultado =>
-            choferConsultado.Id == chofer.Id);
+            var existente = _context.Choferes.Find(chofer.Id);
 
             if (existente != null)
             {
                 existente.Identificacion = chofer.Identificacion;
-
                 existente.Nombre = chofer.Nombre;
-
                 existente.Apellidos = chofer.Apellidos;
+                existente.Correo = chofer.Correo;
 
                 _context.SaveChanges();
             }
@@ -160,34 +189,29 @@ namespace Transporte.BL
 
         public List<Pasajero> ListarPasajeros(string filtro)
         {
-            IQueryable<Pasajero> query = _context.Pasajeros;
+            var query = _context.Pasajeros.AsQueryable();
 
             if (!string.IsNullOrEmpty(filtro))
-            {
-                query = query.Where(pasajero => pasajero.Nombre.Contains(filtro));
-            }
+                query = query.Where(p => p.Nombre.Contains(filtro));
 
             return query.ToList();
         }
 
         public Pasajero ObtenerPasajero(int id)
         {
-            return _context.Pasajeros.FirstOrDefault(pasajero => pasajero.Id == id);
+            return _context.Pasajeros.Find(id);
         }
 
         public void AgregarPasajero(Pasajero pasajero)
         {
-            string claveTemporal = Guid.NewGuid().ToString().Substring(0, 8);
+            string clave = Guid.NewGuid().ToString().Substring(0, 8);
 
-            Usuario usuario = new Usuario
+            var usuario = new Usuario
             {
                 NombreUsuario = pasajero.Correo,
-                Clave = claveTemporal,
+                Clave = clave,
                 Correo = pasajero.Correo,
-                Rol = "Pasajero",
-                IntentosFallidos = 0,
-                Bloqueado = false,
-                FechaBloqueo = null
+                Rol = "Pasajero"
             };
 
             _context.Usuarios.Add(usuario);
@@ -201,326 +225,58 @@ namespace Transporte.BL
 
         public void EditarPasajero(Pasajero pasajero)
         {
-            Pasajero existente = _context.Pasajeros.FirstOrDefault(pasajeroConsultado =>
-            pasajeroConsultado.Id == pasajero.Id);
+            var existente = _context.Pasajeros.Find(pasajero.Id);
 
             if (existente != null)
             {
                 existente.Identificacion = pasajero.Identificacion;
                 existente.Nombre = pasajero.Nombre;
                 existente.Apellidos = pasajero.Apellidos;
+                existente.Correo = pasajero.Correo;
 
                 _context.SaveChanges();
             }
         }
 
-        public List<Ruta> ListarRutas(string filtro)
+        private void EnviarCorreo(string correoDestino, string asunto, string cuerpo)
         {
-            IQueryable<Ruta> query = _context.Rutas;
+            var mensaje = new MimeMessage();
 
-            if (!string.IsNullOrEmpty(filtro))
-            {
-                query = query.Where(ruta => ruta.Nombre.Contains(filtro) || ruta.Destino.Contains(filtro));
-            }
+            mensaje.From.Add(new MailboxAddress("Gestor de Transporte", CorreoEmisor));
+            mensaje.To.Add(MailboxAddress.Parse(correoDestino));
+            mensaje.Subject = asunto;
 
-            return query.ToList();
+            mensaje.Body = new TextPart("plain") { Text = cuerpo };
+
+            using var smtp = new SmtpClient();
+
+            smtp.Connect("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+            smtp.Authenticate(CorreoEmisor, ClaveAplicacion);
+            smtp.Send(mensaje);
+            smtp.Disconnect(true);
         }
 
-        public Ruta ObtenerRuta(int id)
-        {
-            return _context.Rutas.FirstOrDefault(ruta => ruta.Id == id);
-        }
+        public List<Ruta> ListarRutas(string filtro) => new();
+        public Ruta ObtenerRuta(int id) => null;
+        public void AgregarRuta(Ruta ruta) { }
+        public void EditarRuta(Ruta ruta) { }
 
-        public void AgregarRuta(Ruta ruta)
-        {
-            _context.Rutas.Add(ruta);
-            _context.SaveChanges();
-        }
+        public List<Unidad> ListarUnidades() => new();
+        public Unidad ObtenerUnidad(int id) => null;
+        public bool ExistePlaca(string placa, int idIgnorar = 0) => false;
+        public bool AgregarUnidad(Unidad unidad) => true;
+        public bool EditarUnidad(Unidad unidad) => true;
 
-        public void EditarRuta(Ruta ruta)
-        {
-            Ruta existente = _context.Rutas.FirstOrDefault(rutaConsultada => rutaConsultada.Id == ruta.Id);
+        public List<Viaje> ListarViajes(string filtro, DateTime? fecha) => new();
+        public Viaje? ObtenerViajePorId(int id) => null;
+        public void AgregarViaje(Viaje viaje) { }
+        public void EditarViaje(Viaje viaje) { }
+        public void IniciarViaje(int id) { }
+        public void CancelarViaje(int id, string motivoCancelacion) { }
+        public void CompletarViaje(int id) { }
 
-            if (existente != null)
-            {
-                existente.Nombre = ruta.Nombre;
-                existente.Origen = ruta.Origen;
-                existente.Destino = ruta.Destino;
-                existente.DuracionEstimada = ruta.DuracionEstimada;
-                existente.PrecioBase = ruta.PrecioBase;
-
-                _context.SaveChanges();
-            }
-        }
-
-        public List<Unidad> ListarUnidades()
-        {
-            return _context.Unidades.ToList();
-        }
-
-        public Unidad ObtenerUnidad(int id)
-        {
-            return _context.Unidades.FirstOrDefault(unidad => unidad.Id == id);
-        }
-
-        public bool ExistePlaca(string placa, int idIgnorar = 0)
-        {
-            return _context.Unidades.Any(unidad => unidad.Placa == placa && unidad.Id != idIgnorar);
-        }
-
-        public bool AgregarUnidad(Unidad unidad)
-        {
-            if (ExistePlaca(unidad.Placa))
-            {
-                return false;
-            }
-
-            _context.Unidades.Add(unidad);
-            _context.SaveChanges();
-
-            return true;
-        }
-
-        public bool EditarUnidad(Unidad unidad)
-        {
-            if (ExistePlaca(unidad.Placa, unidad.Id))
-            {
-                return false;
-            }
-
-            Unidad existente = _context.Unidades.FirstOrDefault(unidadConsultada =>
-            unidadConsultada.Id == unidad.Id);
-
-            if (existente == null)
-            {
-                return false;
-            }
-
-            existente.Placa = unidad.Placa;
-            existente.Modelo = unidad.Modelo;
-            existente.AnioFabricacion = unidad.AnioFabricacion;
-            existente.CapacidadPasajeros = unidad.CapacidadPasajeros;
-
-            _context.SaveChanges();
-
-            return true;
-        }
-        public List<Viaje> ListarViajes(string filtro, DateTime? fecha)
-        {
-            var viajes = _context.Viajes
-                .Select(v => new Viaje
-                {
-                    Id = v.Id,
-                    RutaId = v.RutaId,
-                    UnidadId = v.UnidadId,
-                    ChoferId = v.ChoferId,
-                    EstadoViajeId = v.EstadoViajeId,
-                    FechaHoraSalida = v.FechaHoraSalida,
-                    FechaHoraLlegadaEstimada = v.FechaHoraLlegadaEstimada,
-                    MotivoCancelacion = v.MotivoCancelacion,
-                    FechaCancelacion = v.FechaCancelacion
-                })
-                .ToList();
-
-            foreach (var viaje in viajes)
-            {
-                var ruta = _context.Rutas.Find(viaje.RutaId);
-                var unidad = _context.Unidades.Find(viaje.UnidadId);
-                var chofer = _context.Choferes.Find(viaje.ChoferId);
-                var estado = _context.EstadosViaje.Find(viaje.EstadoViajeId);
-
-                viaje.NombreRuta = ruta != null ? ruta.Nombre : "";
-                viaje.PlacaUnidad = unidad != null ? unidad.Placa : "";
-                viaje.NombreChofer = chofer != null ? chofer.Nombre + " " + chofer.Apellidos : "";
-                viaje.Estado = estado != null ? estado.Nombre : "";
-            }
-
-            if (!string.IsNullOrEmpty(filtro))
-            {
-                viajes = viajes
-                    .Where(v =>
-                        v.NombreRuta.Contains(filtro) ||
-                        v.PlacaUnidad.Contains(filtro) ||
-                        v.NombreChofer.Contains(filtro))
-                    .ToList();
-            }
-            if (fecha.HasValue)
-                {
-                    viajes = viajes
-                        .Where(v => v.FechaHoraSalida.Date == fecha.Value.Date)
-                        .ToList();
-                }
-            return viajes;
-        }
-
-public Viaje? ObtenerViajePorId(int id)
-{
-    return _context.Viajes
-        .Where(v => v.Id == id)
-        .Select(v => new Viaje
-        {
-            Id = v.Id,
-            RutaId = v.RutaId,
-            UnidadId = v.UnidadId,
-            ChoferId = v.ChoferId,
-            EstadoViajeId = v.EstadoViajeId,
-            FechaHoraSalida = v.FechaHoraSalida,
-            FechaHoraLlegadaEstimada = v.FechaHoraLlegadaEstimada,
-            MotivoCancelacion = v.MotivoCancelacion,
-            FechaCancelacion = v.FechaCancelacion
-        })
-        .FirstOrDefault();
-}
-
-public void AgregarViaje(Viaje viaje)
-{
-    bool choferOcupado = _context.Viajes.Any(v =>
-        v.ChoferId == viaje.ChoferId &&
-        (v.EstadoViajeId == 1 || v.EstadoViajeId == 2) &&
-        viaje.FechaHoraSalida < v.FechaHoraLlegadaEstimada &&
-        viaje.FechaHoraLlegadaEstimada > v.FechaHoraSalida
-    );
-
-    bool unidadOcupada = _context.Viajes.Any(v =>
-        v.UnidadId == viaje.UnidadId &&
-        (v.EstadoViajeId == 1 || v.EstadoViajeId == 2) &&
-        viaje.FechaHoraSalida < v.FechaHoraLlegadaEstimada &&
-        viaje.FechaHoraLlegadaEstimada > v.FechaHoraSalida
-    );
-
-    if (choferOcupado)
-        throw new Exception("El chofer ya tiene un viaje activo en ese rango de fechas.");
-
-    if (unidadOcupada)
-        throw new Exception("La unidad ya tiene un viaje activo en ese rango de fechas.");
-
-    viaje.EstadoViajeId = 1;
-
-    _context.Viajes.Add(viaje);
-
-    _context.SaveChanges();
-}
-
-public void EditarViaje(Viaje viaje)
-{
-    var viajeBD = _context.Viajes.Find(viaje.Id);
-
-    if (viajeBD == null)
-        throw new Exception("El viaje no existe.");
-
-    if (viajeBD.EstadoViajeId != 1)
-        throw new Exception("Solo se pueden editar viajes en estado Programado.");
-
-    viajeBD.RutaId = viaje.RutaId;
-    viajeBD.UnidadId = viaje.UnidadId;
-    viajeBD.ChoferId = viaje.ChoferId;
-    viajeBD.EstadoViajeId = viaje.EstadoViajeId;
-    viajeBD.FechaHoraSalida = viaje.FechaHoraSalida;
-    viajeBD.FechaHoraLlegadaEstimada = viaje.FechaHoraLlegadaEstimada;
-
-    _context.SaveChanges();
-}
-
-public void IniciarViaje(int id)
-{
-    var viaje = _context.Viajes.Find(id);
-
-    if (viaje == null)
-        throw new Exception("El viaje no existe.");
-
-    if (viaje.EstadoViajeId != 1)
-        throw new Exception("Solo se pueden iniciar viajes en estado Programado.");
-
-    viaje.EstadoViajeId = 2;
-    _context.SaveChanges();
-}
-
-        public void CancelarViaje(int id, string motivoCancelacion)
-        {
-            var viaje = _context.Viajes.Find(id);
-
-            if (viaje == null)
-                throw new Exception("El viaje no existe.");
-
-            if (viaje.EstadoViajeId != 1)
-                throw new Exception("Solo se pueden cancelar viajes en estado Programado.");
-
-            viaje.EstadoViajeId = 4;
-            viaje.MotivoCancelacion = motivoCancelacion;
-            viaje.FechaCancelacion = DateTime.Now;
-
-            _context.SaveChanges();
-        }
-
-        public List<Viaje> ListarViajesCancelados()
-        {
-            var viajesCancelados = _context.Viajes
-                .Where(v => v.EstadoViajeId == 4) // 4 = Cancelado
-                .Select(v => new Viaje
-                {
-                    Id = v.Id,
-                    RutaId = v.RutaId,
-                    UnidadId = v.UnidadId,
-                    ChoferId = v.ChoferId,
-                    EstadoViajeId = v.EstadoViajeId,
-                    FechaHoraSalida = v.FechaHoraSalida,
-                    MotivoCancelacion = v.MotivoCancelacion,
-                    FechaCancelacion = v.FechaCancelacion
-                })
-                .ToList();
-
-            foreach (var viaje in viajesCancelados)
-            {
-                var ruta = _context.Rutas.Find(viaje.RutaId);
-                var unidad = _context.Unidades.Find(viaje.UnidadId);
-                var chofer = _context.Choferes.Find(viaje.ChoferId);
-
-                viaje.NombreRuta = ruta?.Nombre ?? "";
-                viaje.PlacaUnidad = unidad?.Placa ?? "";
-                viaje.NombreChofer = chofer != null ? $"{chofer.Nombre} {chofer.Apellidos}" : "";
-                viaje.Estado = "Cancelado";
-            }
-
-            return viajesCancelados;
-        }
-
-        public void CompletarViaje(int id)
-            {
-                var viaje = _context.Viajes.Find(id);
-
-                if (viaje == null)
-                    throw new Exception("El viaje no existe.");
-
-                // Solo viajes en curso
-                if (viaje.EstadoViajeId != 2)
-                    throw new Exception("Solo se pueden completar viajes en curso.");
-
-                // 3 = Completado
-                viaje.EstadoViajeId = 3;
-
-                _context.SaveChanges();
-        }
-
-        public List<Reserva> ListarReservasPorPasajero(int pasajeroId)
-        {
-            return _context.Reservas
-                .Where(r => r.PasajeroId == pasajeroId)
-                .Include(r => r.Viaje)
-                .ThenInclude(v => v.Ruta)
-                .Include(r => r.Viaje.Unidad)
-                .Include(r => r.Viaje.Chofer)
-                .ToList();
-        }
-
-        public Reserva? ObtenerDetalleReserva(int reservaId)
-        {
-            return _context.Reservas
-                .Include(r => r.Viaje)
-                .ThenInclude(v => v.Ruta)
-                .Include(r => r.Viaje.Unidad)
-                .Include(r => r.Viaje.Chofer)
-                .FirstOrDefault(r => r.Id == reservaId);
-        }
-
+        public List<Viaje> ListarViajesCancelados() => new();
+        public List<Reserva> ListarReservasPorPasajero(int pasajeroId) => new();
+        public Reserva? ObtenerDetalleReserva(int reservaId) => null;
     }
 }

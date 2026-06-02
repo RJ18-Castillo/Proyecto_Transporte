@@ -9,11 +9,8 @@ namespace Transporte.BL
         bool CambiarClave(string usuario, string claveActual, string claveNueva);
 
         List<Chofer> ListarChoferes(string filtro);
-
         Chofer ObtenerChofer(int id);
-
         void AgregarChofer(Chofer chofer);
-
         void EditarChofer(Chofer chofer);
 
         List<Pasajero> ListarPasajeros(string filtro);
@@ -44,6 +41,5 @@ namespace Transporte.BL
 
         List<Reserva> ListarReservasPorPasajero(int pasajeroId);
         Reserva? ObtenerDetalleReserva(int reservaId);
-
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Transporte.BL;
 using Transporte.Model;
 
@@ -7,6 +8,16 @@ namespace Transporte.UI.Controllers.Transporte
 {
     public class PasajeroController : Controller
     {
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            if (HttpContext.Session.GetInt32("UsuarioId") == null)
+            {
+                context.Result = RedirectToAction("Index", "Login");
+            }
+
+            base.OnActionExecuting(context);
+        }
+
         private readonly IGestorTransporte _gestor;
 
         public PasajeroController(IGestorTransporte gestor)
