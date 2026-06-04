@@ -211,7 +211,10 @@ Este es un mensaje automático, por favor no responder."
                 NombreUsuario = pasajero.Correo,
                 Clave = clave,
                 Correo = pasajero.Correo,
-                Rol = "Pasajero"
+                Rol = "Pasajero",
+                IntentosFallidos = 0,
+                Bloqueado = false,
+                FechaBloqueo = null
             };
 
             _context.Usuarios.Add(usuario);
@@ -221,6 +224,25 @@ Este es un mensaje automático, por favor no responder."
 
             _context.Pasajeros.Add(pasajero);
             _context.SaveChanges();
+
+            EnviarCorreo(
+                pasajero.Correo,
+                "Creación de cuenta - Gestor de Transporte",
+                $@"Estimado/a {pasajero.Nombre},
+
+Su cuenta ha sido creada en el sistema Gestor de Transporte.
+
+Credenciales de acceso:
+- Usuario: {pasajero.Correo}
+- Contraseña temporal: {clave}
+
+Por seguridad, se recomienda cambiar su contraseña al iniciar sesión.
+
+Atentamente,
+Sistema Gestor de Transporte
+
+Este es un mensaje automático, por favor no responder."
+            );
         }
 
         public void EditarPasajero(Pasajero pasajero)
@@ -232,7 +254,6 @@ Este es un mensaje automático, por favor no responder."
                 existente.Identificacion = pasajero.Identificacion;
                 existente.Nombre = pasajero.Nombre;
                 existente.Apellidos = pasajero.Apellidos;
-                existente.Correo = pasajero.Correo;
 
                 _context.SaveChanges();
             }
@@ -256,16 +277,104 @@ Este es un mensaje automático, por favor no responder."
             smtp.Disconnect(true);
         }
 
-        public List<Ruta> ListarRutas(string filtro) => new();
-        public Ruta ObtenerRuta(int id) => null;
-        public void AgregarRuta(Ruta ruta) { }
-        public void EditarRuta(Ruta ruta) { }
+        public List<Ruta> ListarRutas(string filtro)
+        {
+            var query = _context.Rutas.AsQueryable();
 
-        public List<Unidad> ListarUnidades() => new();
-        public Unidad ObtenerUnidad(int id) => null;
-        public bool ExistePlaca(string placa, int idIgnorar = 0) => false;
-        public bool AgregarUnidad(Unidad unidad) => true;
-        public bool EditarUnidad(Unidad unidad) => true;
+            if (!string.IsNullOrWhiteSpace(filtro))
+            {
+                query = query.Where(ruta =>
+                    ruta.Nombre.Contains(filtro) ||
+                    ruta.Destino.Contains(filtro));
+            }
+
+            return query
+                .OrderBy(ruta => ruta.Nombre)
+                .ToList();
+        }
+
+        public Ruta ObtenerRuta(int id)
+        {
+            return _context.Rutas.FirstOrDefault(ruta => ruta.Id == id);
+        }
+
+        public void AgregarRuta(Ruta ruta)
+        {
+            _context.Rutas.Add(ruta);
+            _context.SaveChanges();
+        }
+
+        public void EditarRuta(Ruta ruta)
+        {
+            var existente = _context.Rutas.FirstOrDefault(r => r.Id == ruta.Id);
+
+            if (existente != null)
+            {
+                existente.Nombre = ruta.Nombre;
+                existente.Origen = ruta.Origen;
+                existente.Destino = ruta.Destino;
+                existente.DuracionEstimada = ruta.DuracionEstimada;
+                existente.PrecioBase = ruta.PrecioBase;
+
+                _context.SaveChanges();
+            }
+        }
+
+        public List<Unidad> ListarUnidades()
+        {
+            return _context.Unidades
+                .OrderBy(unidad => unidad.Placa)
+                .ToList();
+        }
+
+        public Unidad ObtenerUnidad(int id)
+        {
+            return _context.Unidades.FirstOrDefault(unidad => unidad.Id == id);
+        }
+
+        public bool ExistePlaca(string placa, int idIgnorar = 0)
+        {
+            return _context.Unidades.Any(unidad =>
+                unidad.Placa == placa &&
+                unidad.Id != idIgnorar);
+        }
+
+        public bool AgregarUnidad(Unidad unidad)
+        {
+            if (ExistePlaca(unidad.Placa))
+            {
+                return false;
+            }
+
+            _context.Unidades.Add(unidad);
+            _context.SaveChanges();
+
+            return true;
+        }
+
+        public bool EditarUnidad(Unidad unidad)
+        {
+            if (ExistePlaca(unidad.Placa, unidad.Id))
+            {
+                return false;
+            }
+
+            var existente = _context.Unidades.FirstOrDefault(u => u.Id == unidad.Id);
+
+            if (existente == null)
+            {
+                return false;
+            }
+
+            existente.Placa = unidad.Placa;
+            existente.Modelo = unidad.Modelo;
+            existente.AnioFabricacion = unidad.AnioFabricacion;
+            existente.CapacidadPasajeros = unidad.CapacidadPasajeros;
+
+            _context.SaveChanges();
+
+            return true;
+        }
 
         public List<Viaje> ListarViajes(string filtro, DateTime? fecha) => new();
         public Viaje? ObtenerViajePorId(int id) => null;
