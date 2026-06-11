@@ -147,11 +147,11 @@ public IActionResult Cancelar(int id, string motivoCancelacion)
             {
                 var rutas = _gestor.ListarRutas("");
                 var unidades = _gestor.ListarUnidades();
-                var choferes = _gestor.ListarChoferes("");
+                //var choferes = _gestor.ListarChoferes("");
 
                 ViewBag.Rutas = new SelectList(rutas, "Id", "Nombre");
                 ViewBag.Unidades = new SelectList(unidades, "Id", "Placa");
-                ViewBag.Choferes = new SelectList(choferes, "Id", "Nombre");
+                //ViewBag.Choferes = new SelectList(choferes, "Id", "Nombre");
 
             }
         public IActionResult Completar(int id)
