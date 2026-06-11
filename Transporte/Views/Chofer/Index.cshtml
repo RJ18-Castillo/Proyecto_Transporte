@@ -1,0 +1,61 @@
+﻿@{
+    ViewData["Title"] = "Panel Chofer";
+}
+
+<div class="container mt-4">
+    <h4 class="mb-1">👋 Bienvenido, @Context.Session.GetString("NombreUsuario")</h4>
+    <p class="text-muted mb-4">Panel de Chofer — TicoBus</p>
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">👥 Pasajeros</h5>
+                    <p class="card-text text-muted">Registrar y gestionar pasajeros.</p>
+                    <a href="/Pasajeros/Index" class="btn btn-primary">Ir al módulo</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">🗺️ Rutas</h5>
+                    <p class="card-text text-muted">Gestionar las rutas disponibles.</p>
+                    <a href="/Rutas/Index" class="btn btn-primary">Ir al módulo</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">🚌 Unidades</h5>
+                    <p class="card-text text-muted">Gestionar los autobuses disponibles.</p>
+                    <a href="/Unidades/Index" class="btn btn-primary">Ir al módulo</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">🚗 Viajes</h5>
+                    <p class="card-text text-muted">Programar y gestionar viajes.</p>
+                    <a href="/Viajes/Index" class="btn btn-primary">Ir al módulo</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">▶️ Viajes en Curso</h5>
+                    <p class="card-text text-muted">Gestionar reservas de viajes activos.</p>
+                    <a href="/ViajesEnCurso/Index" class="btn btn-primary">Ir al módulo</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+        <a href="/Auth/CambioClave" class="btn btn-outline-warning">🔑 Cambiar clave</a>
+        <a href="/Auth/Logout" class="btn btn-outline-danger">Cerrar sesión</a>
+    </div>
+</div>
