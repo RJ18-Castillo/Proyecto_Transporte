@@ -2,189 +2,17 @@
 using MailKit.Security;
 using MimeKit;
 using Microsoft.EntityFrameworkCore;
-using Transporte.DA;
 using Transporte.Model;
 
 namespace Transporte.BL
-{
+{/*
     public class GestorTransporte : IGestorTransporte
     {
         private readonly AppDbContext _context;
 
-        private const string CorreoEmisor = "transportesticobus@gmail.com";
-        private const string ClaveAplicacion = "crlteimnkhukmgqh";
-
         public GestorTransporte(AppDbContext context)
         {
             _context = context;
-        }
-
-        public Usuario Login(string usuario, string clave)
-        {
-            var user = _context.Usuarios.FirstOrDefault(u => u.NombreUsuario == usuario);
-
-            if (user == null)
-                return null;
-
-            if (user.Bloqueado)
-            {
-                if (user.FechaBloqueo.HasValue &&
-                    DateTime.Now < user.FechaBloqueo.Value.AddMinutes(3))
-                    return null;
-
-                user.Bloqueado = false;
-                user.IntentosFallidos = 0;
-            }
-
-            if (user.Clave != clave)
-            {
-                user.IntentosFallidos++;
-
-                if (user.IntentosFallidos >= 2)
-                {
-                    user.Bloqueado = true;
-                    user.FechaBloqueo = DateTime.Now;
-                }
-
-                _context.SaveChanges();
-                return null;
-            }
-
-            user.IntentosFallidos = 0;
-            user.Bloqueado = false;
-
-            _context.SaveChanges();
-
-            // 🔥 CORREO PROFESIONAL LOGIN
-            EnviarCorreo(
-                user.Correo,
-                "Seguridad - Inicio de sesión detectado",
-                $@"Estimado/a {user.NombreUsuario},
-
-Le informamos que se ha realizado un inicio de sesión en su cuenta del sistema Gestor de Transporte.
-
-Detalles del acceso:
-- Fecha: {DateTime.Now:dd/MM/yyyy}
-- Hora: {DateTime.Now:HH:mm:ss}
-
-Si usted reconoce esta actividad, no es necesario realizar ninguna acción.
-
-En caso contrario, le recomendamos cambiar su contraseña de inmediato y comunicarse con el administrador del sistema.
-
-Atentamente,
-Sistema Gestor de Transporte
-
-Este es un mensaje automático, por favor no responder."
-            );
-
-            return user;
-        }
-
-        public bool CambiarClave(string usuario, string claveActual, string claveNueva)
-        {
-            var user = _context.Usuarios.FirstOrDefault(u => u.NombreUsuario == usuario);
-
-            if (user == null || user.Clave != claveActual)
-                return false;
-
-            user.Clave = claveNueva;
-
-            _context.SaveChanges();
-
-            // 🔥 CORREO CAMBIO DE CLAVE
-            EnviarCorreo(
-                user.Correo,
-                $"Cambio de clave — {user.NombreUsuario}",
-                $@"Estimado/a {user.NombreUsuario},
-
-Le confirmamos que la contraseña de su cuenta ha sido actualizada correctamente.
-
-Detalles del cambio:
-- Fecha: {DateTime.Now:dd/MM/yyyy}
-- Hora: {DateTime.Now:HH:mm:ss}
-
-Si usted no realizó este cambio, le recomendamos comunicarse de inmediato con el administrador del sistema.
-
-Atentamente,
-Sistema Gestor de Transporte
-
-Este es un mensaje automático, por favor no responder."
-            );
-
-            return true;
-        }
-
-        public List<Chofer> ListarChoferes(string filtro)
-        {
-            var query = _context.Choferes.AsQueryable();
-
-            if (!string.IsNullOrEmpty(filtro))
-                query = query.Where(c => c.Nombre.Contains(filtro));
-
-            return query.ToList();
-        }
-
-        public Chofer ObtenerChofer(int id)
-        {
-            return _context.Choferes.Find(id);
-        }
-
-        public void AgregarChofer(Chofer chofer)
-        {
-            string clave = Guid.NewGuid().ToString().Substring(0, 8);
-
-            var usuario = new Usuario
-            {
-                NombreUsuario = chofer.Correo,
-                Clave = clave,
-                Correo = chofer.Correo,
-                Rol = "Chofer",
-                IntentosFallidos = 0,
-                Bloqueado = false
-            };
-
-            _context.Usuarios.Add(usuario);
-            _context.SaveChanges();
-
-            chofer.UsuarioId = usuario.Id;
-
-            _context.Choferes.Add(chofer);
-            _context.SaveChanges();
-
-            // 🔥 CORREO CON CREDENCIALES
-            EnviarCorreo(
-                chofer.Correo,
-                "Creación de cuenta - Gestor de Transporte",
-                $@"Estimado/a {chofer.Nombre},
-
-Su cuenta ha sido creada en el sistema Gestor de Transporte.
-
-Credenciales de acceso:
-- Usuario: {chofer.Correo}
-- Contraseña temporal: {clave}
-
-Por seguridad, se recomienda cambiar su contraseña al iniciar sesión.
-
-Atentamente,
-Sistema Gestor de Transporte
-
-Este es un mensaje automático, por favor no responder."
-            );
-        }
-
-        public void EditarChofer(Chofer chofer)
-        {
-            var existente = _context.Choferes.Find(chofer.Id);
-
-            if (existente != null)
-            {
-                existente.Identificacion = chofer.Identificacion;
-                existente.Nombre = chofer.Nombre;
-                existente.Apellidos = chofer.Apellidos;
-                existente.Correo = chofer.Correo;
-
-                _context.SaveChanges();
-            }
         }
 
         public List<Pasajero> ListarPasajeros(string filtro)
@@ -387,5 +215,5 @@ Este es un mensaje automático, por favor no responder."
         public List<Viaje> ListarViajesCancelados() => new();
         public List<Reserva> ListarReservasPorPasajero(int pasajeroId) => new();
         public Reserva? ObtenerDetalleReserva(int reservaId) => null;
-    }
+    }*/
 }
