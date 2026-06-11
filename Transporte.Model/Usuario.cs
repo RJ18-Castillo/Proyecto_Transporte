@@ -1,28 +1,24 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿namespace Transporte.Model;
 
-namespace Transporte.Model
+public partial class Usuario
 {
-    public class Usuario
-    {
-        public int Id { get; set; }
+    public string Cedula { get; set; } = null!;
 
-        [Required]
-        [StringLength(100)]
-        public string NombreUsuario { get; set; }
+    public string NombreUsuario { get; set; } = null!;
 
-        [Required]
-        [StringLength(100)]
-        public string Clave { get; set; }
+    public string Correo { get; set; } = null!;
 
-        [Required]
-        [StringLength(150)]
-        public string Correo { get; set; }
+    public string Clave { get; set; } = null!;
 
-        [Required]
-        [StringLength(50)]
-        public string Rol { get; set; }
-        public int IntentosFallidos { get; set; } = 0;
-        public bool Bloqueado { get; set; } = false;
-        public DateTime? FechaBloqueo { get; set; }
-    }
+    public string TipoUsuario { get; set; } = null!;
+
+    public int IntentosFallidos { get; set; }
+
+    public bool Bloqueado { get; set; }
+
+    public DateTime FechaRegistro { get; set; }
+
+    public virtual Chofer? Chofere { get; set; }
+
+    public virtual Pasajero? Pasajero { get; set; }
 }

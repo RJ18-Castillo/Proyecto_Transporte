@@ -34,5 +34,7 @@ namespace Transporte.Model
 
         [NotMapped]
         public string? Estado { get; set; }
+
+        public string CedulaChofer { get; set; } = null!;
     }
 }

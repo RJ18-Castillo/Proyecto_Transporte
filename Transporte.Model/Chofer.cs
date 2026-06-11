@@ -1,29 +1,18 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿namespace Transporte.Model;
 
-namespace Transporte.Model
+public partial class Chofer
 {
-    public class Chofer
-    {
-        public int Id { get; set; }
+    public string Cedula { get; set; } = null!;
 
-        [Required]
-        [StringLength(50)]
-        public string Identificacion { get; set; }
+    public string Nombre1 { get; set; } = null!;
 
-        [Required]
-        [StringLength(100)]
-        public string Nombre { get; set; }
+    public string? Nombre2 { get; set; }
 
-        [Required]
-        [StringLength(100)]
-        public string Apellidos { get; set; }
+    public string Apellido1 { get; set; } = null!;
 
-        [Required]
-        [StringLength(150)]
-        public string Correo { get; set; }
+    public string? Apellido2 { get; set; }
 
-        public int UsuarioId { get; set; }
+    public virtual Usuario CedulaNavigation { get; set; } = null!;
 
-        public Usuario? Usuario { get; set; }
-    }
+    public virtual ICollection<Viaje> Viajes { get; set; } = new List<Viaje>();
 }
