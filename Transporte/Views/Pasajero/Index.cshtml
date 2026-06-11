@@ -33,28 +33,16 @@
         </tr>
     </thead>
 
-    <tbody>
+        <tbody>
 
-        @foreach (var item in Model)
+          @foreach (var item in Model)
         {
-            <tr>
+             <tr>
 
-                <td>@item.Identificacion</td>
-
-                <td>@item.Nombre</td>
-
-                <td>@item.Apellidos</td>
-
-                <td>@item.Correo</td>
-
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">
-                        Editar
-                    </a>
-                </td>
 
             </tr>
         }
+
 
     </tbody>
 
