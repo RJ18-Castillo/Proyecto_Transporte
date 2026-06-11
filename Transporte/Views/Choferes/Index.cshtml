@@ -1,0 +1,63 @@
+﻿@model List<Transporte.Model.Chofer>
+@{
+    ViewData["Title"] = "Gestión de Choferes";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4>🚌 Gestión de Choferes</h4>
+        <a href="/Choferes/Agregar" class="btn btn-primary">+ Agregar Chofer</a>
+    </div>
+
+    @if (TempData["Exito"] != null)
+    {
+        <div class="alert alert-success">@TempData["Exito"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <form method="get" action="/Choferes/Index" class="d-flex mb-3 gap-2">
+        <input name="filtro" value="@ViewBag.Filtro"
+               class="form-control" placeholder="Buscar por nombre o apellido..." />
+        <button class="btn btn-secondary">Buscar</button>
+        @if (!string.IsNullOrEmpty(ViewBag.Filtro as string))
+        {
+            <a href="/Choferes/Index" class="btn btn-outline-secondary">Limpiar</a>
+        }
+    </form>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Identificación</th>
+                <th>Nombre completo</th>
+                <th>Correo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in Model)
+            {
+                <tr>
+                    <td>@c.Cedula</td>
+                    <td>@c.Nombre1 @c.Nombre2 @c.Apellido1 @c.Apellido2</td>
+                    <td>@c.CedulaNavigation?.Correo</td>
+                    <td>
+                        <a href="/Choferes/Editar/@c.Cedula" class="btn btn-sm btn-warning">Editar</a>
+                        <form method="post" action="/Choferes/Eliminar" style="display:inline"
+                              onsubmit="return confirm('¿Eliminar este chofer?')">
+                            <input type="hidden" name="cedula" value="@c.Cedula" />
+                            <button class="btn btn-sm btn-danger">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Any())
+            {
+                <tr><td colspan="4" class="text-center text-muted">No hay choferes registrados.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>

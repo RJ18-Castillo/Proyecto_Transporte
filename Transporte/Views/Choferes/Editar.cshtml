@@ -1,0 +1,42 @@
+﻿@model Transporte.Model.Chofer
+@{
+    ViewData["Title"] = "Editar Chofer";
+}
+
+<div class="container mt-4" style="max-width:550px">
+    <h4 class="mb-4">✏️ Editar Chofer</h4>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Error</div>
+    }
+
+    <form method="post" action="/Choferes/Editar/@Model.Cedula">
+        <input type="hidden" name="id" value="@Model.Cedula" />
+
+        <div class="mb-3">
+            <label class="form-label">Identificación</label>
+            <input class="form-control" value="@Model.Cedula" disabled />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Primer nombre <span class="text-danger">*</span></label>
+            <input name="nombre1" class="form-control" value="@Model.Nombre1" maxlength="50" required />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Segundo nombre</label>
+            <input name="nombre2" class="form-control" value="@Model.Nombre2" maxlength="50" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Primer apellido <span class="text-danger">*</span></label>
+            <input name="apellido1" class="form-control" value="@Model.Apellido1" maxlength="50" required />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Segundo apellido</label>
+            <input name="apellido2" class="form-control" value="@Model.Apellido2" maxlength="50" />
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary">Guardar cambios</button>
+            <a href="/Choferes/Index" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
