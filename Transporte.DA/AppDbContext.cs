@@ -142,6 +142,38 @@ public partial class AppDbContext : DbContext
         });
 
         OnModelCreatingPartial(modelBuilder);
+
+        modelBuilder.Entity<Ruta>(entity =>
+        {
+            entity.ToTable("Rutas");
+
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Id)
+                .HasColumnName("Id");
+
+            entity.Property(e => e.Nombre)
+                .HasColumnName("Nombre")
+                .HasMaxLength(50)
+                .IsUnicode(false);
+
+            entity.Property(e => e.Origen)
+                .HasColumnName("Origen")
+                .HasMaxLength(100)
+                .IsUnicode(false);
+
+            entity.Property(e => e.Destino)
+                .HasColumnName("Destino")
+                .HasMaxLength(100)
+                .IsUnicode(false);
+
+            entity.Property(e => e.DuracionEstimada)
+                .HasColumnName("DuracionEstimada");
+
+            entity.Property(e => e.PrecioBase)
+                .HasColumnName("PrecioBase")
+                .HasColumnType("decimal(10,2)");
+        });
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

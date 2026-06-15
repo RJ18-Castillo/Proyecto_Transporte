@@ -9,7 +9,7 @@ using Transporte.UI.Services;
 
 namespace Transporte.UI.Controllers.Transporte
 {
-    public class PasajeroController : Controller
+    public class PasajerosController : Controller
     {
         //public override void OnActionExecuting(ActionExecutingContext context)
         //{
@@ -25,7 +25,7 @@ namespace Transporte.UI.Controllers.Transporte
         private readonly AppDbContext _db;
         private readonly EmailService _email;
 
-        public PasajeroController(
+        public PasajerosController(
         IGestorTransporte gestor,
         AppDbContext db,
         EmailService email)

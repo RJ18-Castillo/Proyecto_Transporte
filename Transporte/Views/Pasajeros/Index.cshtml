@@ -9,12 +9,12 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>👥 Gestión de Pasajeros</h2>
 
-        <a asp-controller="Pasajero" asp-action="Agregar" class="btn btn-primary">
+        <a asp-controller="Pasajeros" asp-action="Agregar" class="btn btn-primary">
             + Agregar Pasajero
         </a>
     </div>
 
-    <form asp-controller="Pasajero" asp-action="Index" method="get" class="row mb-3">
+    <form asp-controller="Pasajeros" asp-action="Index" method="get" class="row mb-3">
         <div class="col-md-10">
             <input type="text"
                    name="filtro"
@@ -50,13 +50,13 @@
                         <td>@($"{item.Nombre1} {item.Nombre2} {item.Apellido1} {item.Apellido2}")</td>
                         <td>@item.CedulaNavigation?.Correo</td>
                         <td>
-                            <a asp-controller="Pasajero"
+                            <a asp-controller="Pasajeros"
                                asp-action="Editar"
                                asp-route-cedula="@item.Cedula"
                                class="btn btn-warning btn-sm">
                                 Editar
                             </a>
-                            <form asp-controller="Pasajero"
+                            <form asp-controller="Pasajeros"
                                   asp-action="Eliminar"
                                   asp-route-cedula="@item.Cedula"
                                   method="post"
