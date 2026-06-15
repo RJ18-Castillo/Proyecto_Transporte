@@ -96,37 +96,49 @@ public partial class AppDbContext : DbContext
         modelBuilder.Entity<Usuario>(entity =>
         {
             entity.ToTable("Usuarios");
-            entity.HasKey(e => e.Cedula).HasName("PK__Usuarios__415B7BE4EC1B5115");
 
-            entity.HasIndex(e => e.Correo, "UQ__Usuarios__2A586E0B88573A0B").IsUnique();
-            entity.HasIndex(e => e.NombreUsuario, "UQ__Usuarios__D4D22D74472290D1").IsUnique();
+            entity.HasKey(e => e.Cedula);
+
+            entity.HasIndex(e => e.Correo).IsUnique();
+            entity.HasIndex(e => e.NombreUsuario).IsUnique();
 
             entity.Property(e => e.Cedula)
                 .HasMaxLength(9)
                 .IsUnicode(false)
-                .HasColumnName("cedula");
-            entity.Property(e => e.Bloqueado).HasColumnName("bloqueado");
-            entity.Property(e => e.Clave)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("clave");
-            entity.Property(e => e.Correo)
-                .HasMaxLength(100)
-                .IsUnicode(false)
-                .HasColumnName("correo");
-            entity.Property(e => e.FechaRegistro)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime")
-                .HasColumnName("fecha_registro");
-            entity.Property(e => e.IntentosFallidos).HasColumnName("intentos_fallidos");
+                .HasColumnName("Cedula");
+
             entity.Property(e => e.NombreUsuario)
                 .HasMaxLength(50)
                 .IsUnicode(false)
-                .HasColumnName("nombre_usuario");
+                .HasColumnName("NombreUsuario");
+
+            entity.Property(e => e.Correo)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("Correo");
+
+            entity.Property(e => e.Clave)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("Clave");
+
             entity.Property(e => e.TipoUsuario)
                 .HasMaxLength(20)
                 .IsUnicode(false)
-                .HasColumnName("tipo_usuario");
+                .HasColumnName("TipoUsuario");
+
+            entity.Property(e => e.IntentosFallidos)
+                .HasColumnName("IntentosFallidos")
+                .HasDefaultValue(0);
+
+            entity.Property(e => e.Bloqueado)
+                .HasColumnName("Bloqueado")
+                .HasDefaultValue(false);
+
+            entity.Property(e => e.FechaRegistro)
+                .HasColumnName("FechaRegistro")
+                .HasColumnType("datetime")
+                .HasDefaultValueSql("GETDATE()");
         });
 
         OnModelCreatingPartial(modelBuilder);

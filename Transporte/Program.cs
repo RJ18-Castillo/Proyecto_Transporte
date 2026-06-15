@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Transporte.DA;
+using Transporte.BL;
 using Transporte.UI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,7 @@ builder.Services.AddSession(options =>
 });
 
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<IGestorTransporte, GestorTransporte>();
 
 var app = builder.Build();
 

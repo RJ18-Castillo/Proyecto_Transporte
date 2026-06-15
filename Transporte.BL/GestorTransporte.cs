@@ -1,33 +1,52 @@
 ﻿using MailKit.Net.Smtp;
 using MailKit.Security;
+using Microsoft.Extensions.Configuration;
 using MimeKit;
 using Microsoft.EntityFrameworkCore;
 using Transporte.Model;
+using Transporte.DA;
 
 namespace Transporte.BL
-{/*
+{
     public class GestorTransporte : IGestorTransporte
     {
         private readonly AppDbContext _context;
+        private readonly IConfiguration _configuration;
 
         public GestorTransporte(AppDbContext context)
         {
             _context = context;
         }
 
-        public List<Pasajero> ListarPasajeros(string filtro)
+        public GestorTransporte(AppDbContext context, IConfiguration configuration)
         {
-            var query = _context.Pasajeros.AsQueryable();
-
-            if (!string.IsNullOrEmpty(filtro))
-                query = query.Where(p => p.Nombre.Contains(filtro));
-
-            return query.ToList();
+            _context = context;
+            _configuration = configuration;
         }
 
-        public Pasajero ObtenerPasajero(int id)
+        public List<Pasajero> ListarPasajeros(string filtro)
         {
-            return _context.Pasajeros.Find(id);
+            var query = _context.Pasajero
+        .Include(p => p.CedulaNavigation)
+        .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(filtro))
+            {
+                query = query.Where(p =>
+                    p.Nombre1.Contains(filtro) ||
+                    p.Apellido1.Contains(filtro) ||
+                    p.Cedula.Contains(filtro));
+            }
+
+            return query
+                .OrderBy(p => p.Nombre1)
+                .ThenBy(p => p.Apellido1)
+                .ToList();
+        }
+
+        public Pasajero ObtenerPasajero(string cedula)
+        {
+            return _context.Pasajero.Find(cedula);
         }
 
         public void AgregarPasajero(Pasajero pasajero)
@@ -36,32 +55,31 @@ namespace Transporte.BL
 
             var usuario = new Usuario
             {
-                NombreUsuario = pasajero.Correo,
+                Cedula = pasajero.CedulaNavigation.Correo,
+                NombreUsuario = pasajero.Cedula,
+                Correo = pasajero.CedulaNavigation.Correo,
                 Clave = clave,
-                Correo = pasajero.Correo,
-                Rol = "Pasajero",
+                TipoUsuario = "Pasajero",
                 IntentosFallidos = 0,
                 Bloqueado = false,
-                FechaBloqueo = null
+                FechaRegistro = DateTime.Now
             };
 
-            _context.Usuarios.Add(usuario);
-            _context.SaveChanges();
+            pasajero.CedulaNavigation = usuario;
 
-            pasajero.UsuarioId = usuario.Id;
-
-            _context.Pasajeros.Add(pasajero);
+            _context.Usuario.Add(usuario);
+            _context.Pasajero.Add(pasajero);
             _context.SaveChanges();
 
             EnviarCorreo(
-                pasajero.Correo,
+                pasajero.CedulaNavigation.Correo,
                 "Creación de cuenta - Gestor de Transporte",
-                $@"Estimado/a {pasajero.Nombre},
+                $@"Estimado/a {pasajero.CedulaNavigation.Correo},
 
 Su cuenta ha sido creada en el sistema Gestor de Transporte.
 
 Credenciales de acceso:
-- Usuario: {pasajero.Correo}
+- Usuario: {pasajero.CedulaNavigation.Correo}
 - Contraseña temporal: {clave}
 
 Por seguridad, se recomienda cambiar su contraseña al iniciar sesión.
@@ -75,13 +93,14 @@ Este es un mensaje automático, por favor no responder."
 
         public void EditarPasajero(Pasajero pasajero)
         {
-            var existente = _context.Pasajeros.Find(pasajero.Id);
+            var existente = _context.Pasajero.Find(pasajero.Cedula);
 
             if (existente != null)
             {
-                existente.Identificacion = pasajero.Identificacion;
-                existente.Nombre = pasajero.Nombre;
-                existente.Apellidos = pasajero.Apellidos;
+                existente.Nombre1 = pasajero.Nombre1;
+                existente.Nombre2 = pasajero.Nombre2;
+                existente.Apellido1 = pasajero.Apellido1;
+                existente.Apellido2 = pasajero.Apellido2;
 
                 _context.SaveChanges();
             }
@@ -89,25 +108,35 @@ Este es un mensaje automático, por favor no responder."
 
         private void EnviarCorreo(string correoDestino, string asunto, string cuerpo)
         {
+            string host = _configuration["EmailSettings:Host"];
+            int port = int.Parse(_configuration["EmailSettings:Port"]);
+            string correo = _configuration["EmailSettings:User"];
+            string password = _configuration["EmailSettings:Password"];
+
             var mensaje = new MimeMessage();
 
-            mensaje.From.Add(new MailboxAddress("Gestor de Transporte", CorreoEmisor));
+            mensaje.From.Add(
+                new MailboxAddress("Gestor de Transporte", correo));
+
             mensaje.To.Add(MailboxAddress.Parse(correoDestino));
             mensaje.Subject = asunto;
 
-            mensaje.Body = new TextPart("plain") { Text = cuerpo };
+            mensaje.Body = new TextPart("plain")
+            {
+                Text = cuerpo
+            };
 
             using var smtp = new SmtpClient();
 
-            smtp.Connect("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-            smtp.Authenticate(CorreoEmisor, ClaveAplicacion);
+            smtp.Connect(host, port, SecureSocketOptions.StartTls);
+            smtp.Authenticate(correo, password);
             smtp.Send(mensaje);
             smtp.Disconnect(true);
         }
 
         public List<Ruta> ListarRutas(string filtro)
         {
-            var query = _context.Rutas.AsQueryable();
+            var query = _context.Ruta.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(filtro))
             {
@@ -123,18 +152,18 @@ Este es un mensaje automático, por favor no responder."
 
         public Ruta ObtenerRuta(int id)
         {
-            return _context.Rutas.FirstOrDefault(ruta => ruta.Id == id);
+            return _context.Ruta.FirstOrDefault(ruta => ruta.Id == id);
         }
 
         public void AgregarRuta(Ruta ruta)
         {
-            _context.Rutas.Add(ruta);
+            _context.Ruta.Add(ruta);
             _context.SaveChanges();
         }
 
         public void EditarRuta(Ruta ruta)
         {
-            var existente = _context.Rutas.FirstOrDefault(r => r.Id == ruta.Id);
+            var existente = _context.Ruta.FirstOrDefault(r => r.Id == ruta.Id);
 
             if (existente != null)
             {
@@ -150,19 +179,19 @@ Este es un mensaje automático, por favor no responder."
 
         public List<Unidad> ListarUnidades()
         {
-            return _context.Unidades
+            return _context.Unidad
                 .OrderBy(unidad => unidad.Placa)
                 .ToList();
         }
 
         public Unidad ObtenerUnidad(int id)
         {
-            return _context.Unidades.FirstOrDefault(unidad => unidad.Id == id);
+            return _context.Unidad.FirstOrDefault(unidad => unidad.Id == id);
         }
 
         public bool ExistePlaca(string placa, int idIgnorar = 0)
         {
-            return _context.Unidades.Any(unidad =>
+            return _context.Unidad.Any(unidad =>
                 unidad.Placa == placa &&
                 unidad.Id != idIgnorar);
         }
@@ -174,7 +203,7 @@ Este es un mensaje automático, por favor no responder."
                 return false;
             }
 
-            _context.Unidades.Add(unidad);
+            _context.Unidad.Add(unidad);
             _context.SaveChanges();
 
             return true;
@@ -187,7 +216,7 @@ Este es un mensaje automático, por favor no responder."
                 return false;
             }
 
-            var existente = _context.Unidades.FirstOrDefault(u => u.Id == unidad.Id);
+            var existente = _context.Unidad.FirstOrDefault(u => u.Id == unidad.Id);
 
             if (existente == null)
             {
@@ -215,5 +244,5 @@ Este es un mensaje automático, por favor no responder."
         public List<Viaje> ListarViajesCancelados() => new();
         public List<Reserva> ListarReservasPorPasajero(int pasajeroId) => new();
         public Reserva? ObtenerDetalleReserva(int reservaId) => null;
-    }*/
+    }
 }

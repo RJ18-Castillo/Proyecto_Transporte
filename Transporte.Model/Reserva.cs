@@ -1,22 +1,20 @@
-﻿namespace Transporte.Model
+﻿namespace Transporte.Model;
+
+public partial class Reserva
 {
-    public class Reserva
-    {
-        public int Id { get; set; }
+    public int Id { get; set; }
 
-       
-        public int PasajeroId { get; set; }
-        public Pasajero Pasajero { get; set; }
+    public int NumeroViaje { get; set; }
 
-        
-        public int ViajeId { get; set; }
-        public Viaje Viaje { get; set; }
+    public string CedulaPasajero { get; set; } = null!;
 
-        
-        public int NumeroAsiento { get; set; }
-        public decimal MontoPagado { get; set; }
+    public int NumeroAsiento { get; set; }
 
-        public string Estado { get; set; } = "Activa";
-    }
+    public decimal MontoPagado { get; set; }
+
+    public DateTime FechaHora { get; set; }
+
+    public virtual Viaje Viaje { get; set; } = null!;
+
+    public virtual Pasajero Pasajero { get; set; } = null!;
 }
-

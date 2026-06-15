@@ -6,7 +6,7 @@ namespace Transporte.BL
     {
 
         List<Pasajero> ListarPasajeros(string filtro);
-        Pasajero ObtenerPasajero(int id);
+        Pasajero ObtenerPasajero(string cedula);
         void AgregarPasajero(Pasajero pasajero);
         void EditarPasajero(Pasajero pasajero);
 
