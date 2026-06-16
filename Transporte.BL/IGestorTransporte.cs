@@ -16,8 +16,8 @@ namespace Transporte.BL
         void EditarRuta(Ruta ruta);
 
         List<Unidad> ListarUnidades();
-        Unidad ObtenerUnidad(int id);
-        bool ExistePlaca(string placa, int idIgnorar = 0);
+        Unidad ObtenerUnidad(string placa);
+        bool ExistePlaca(string placa);
         bool AgregarUnidad(Unidad unidad);
         bool EditarUnidad(Unidad unidad);
 

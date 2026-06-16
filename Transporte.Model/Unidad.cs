@@ -3,24 +3,17 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace Transporte.Model
+namespace Transporte.Model;
+
+public partial class Unidad
 {
-    public class Unidad
-    {
-        public int Id { get; set; }
+    public string Placa { get; set; } = null!;
 
-        [Required]
-        [StringLength(20)]
-        public string Placa { get; set; }
+    public string Modelo { get; set; } = null!;
 
-        [Required]
-        [StringLength(100)]
-        public string Modelo { get; set; }
+    public short AnoFabricacion { get; set; }
 
-        [Required]
-        public int AnioFabricacion { get; set; }
+    public short Capacidad { get; set; }
 
-        [Required]
-        public int CapacidadPasajeros { get; set; }
-    }
+    public virtual ICollection<Viaje> Viajes { get; set; } = new List<Viaje>();
 }

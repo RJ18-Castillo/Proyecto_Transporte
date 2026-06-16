@@ -174,6 +174,28 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("PrecioBase")
                 .HasColumnType("decimal(10,2)");
         });
+        modelBuilder.Entity<Unidad>(entity =>
+        {
+            entity.ToTable("Unidades");
+
+            entity.HasKey(e => e.Placa);
+
+            entity.Property(e => e.Placa)
+                .HasColumnName("Placa")
+                .HasMaxLength(20)
+                .IsUnicode(false);
+
+            entity.Property(e => e.Modelo)
+                .HasColumnName("Modelo")
+                .HasMaxLength(100)
+                .IsUnicode(false);
+
+            entity.Property(e => e.AnoFabricacion)
+                .HasColumnName("AnoFabricacion");
+
+            entity.Property(e => e.Capacidad)
+                .HasColumnName("Capacidad");
+        });
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

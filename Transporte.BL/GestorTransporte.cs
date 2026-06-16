@@ -13,11 +13,6 @@ namespace Transporte.BL
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
 
-        public GestorTransporte(AppDbContext context)
-        {
-            _context = context;
-        }
-
         public GestorTransporte(AppDbContext context, IConfiguration configuration)
         {
             _context = context;
@@ -184,16 +179,14 @@ Este es un mensaje automático, por favor no responder."
                 .ToList();
         }
 
-        public Unidad ObtenerUnidad(int id)
+        public Unidad ObtenerUnidad(string placa)
         {
-            return _context.Unidad.FirstOrDefault(unidad => unidad.Id == id);
+            return _context.Unidad.FirstOrDefault(unidad => unidad.Placa == placa);
         }
 
-        public bool ExistePlaca(string placa, int idIgnorar = 0)
+        public bool ExistePlaca(string placa)
         {
-            return _context.Unidad.Any(unidad =>
-                unidad.Placa == placa &&
-                unidad.Id != idIgnorar);
+            return _context.Unidad.Any(unidad => unidad.Placa == placa);
         }
 
         public bool AgregarUnidad(Unidad unidad)
@@ -211,22 +204,16 @@ Este es un mensaje automático, por favor no responder."
 
         public bool EditarUnidad(Unidad unidad)
         {
-            if (ExistePlaca(unidad.Placa, unidad.Id))
-            {
-                return false;
-            }
-
-            var existente = _context.Unidad.FirstOrDefault(u => u.Id == unidad.Id);
+            var existente = _context.Unidad.FirstOrDefault(u => u.Placa == unidad.Placa);
 
             if (existente == null)
             {
                 return false;
             }
 
-            existente.Placa = unidad.Placa;
             existente.Modelo = unidad.Modelo;
-            existente.AnioFabricacion = unidad.AnioFabricacion;
-            existente.CapacidadPasajeros = unidad.CapacidadPasajeros;
+            existente.AnoFabricacion = unidad.AnoFabricacion;
+            existente.Capacidad = unidad.Capacidad;
 
             _context.SaveChanges();
 

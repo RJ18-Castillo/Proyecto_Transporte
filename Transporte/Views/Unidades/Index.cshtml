@@ -1,0 +1,85 @@
+﻿@model IEnumerable<Transporte.Model.Unidad>
+
+@{
+    ViewData["Title"] = "Unidades";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>🚌 Gestión de Unidades</h2>
+
+        <a asp-controller="Unidades" asp-action="Agregar" class="btn btn-primary">
+            + Agregar Unidad
+        </a>
+    </div>
+
+    @if (TempData["Exito"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Exito"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Placa</th>
+                <th>Modelo</th>
+                <th>Año de fabricación</th>
+                <th>Capacidad de pasajeros</th>
+                <th style="width: 220px;">Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Placa</td>
+                        <td>@item.Modelo</td>
+                        <td>@item.AnoFabricacion</td>
+                        <td>@item.Capacidad</td>
+                        <td>
+                            <a asp-controller="Unidades"
+                               asp-action="Editar"
+                               asp-route-placa="@item.Placa"
+                               class="btn btn-warning btn-sm">
+                                Editar
+                            </a>
+
+                            <form asp-controller="Unidades"
+                                  asp-action="Eliminar"
+                                  asp-route-placa="@item.Placa"
+                                  method="post"
+                                  style="display:inline;"
+                                  onsubmit="return confirm('¿Eliminar esta unidad?');">
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    Eliminar
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5" class="text-center text-muted">
+                        No hay unidades registradas.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>
