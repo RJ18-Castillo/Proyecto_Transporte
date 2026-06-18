@@ -7,201 +7,124 @@ GO
 -------------------CREAR TABLAS-------------------
 --------------------------------------------------
 
-CREATE TABLE Usuarios
-(
-    Id INT PRIMARY KEY IDENTITY(1,1),
-    NombreUsuario NVARCHAR(100) NOT NULL,
-    Clave NVARCHAR(100) NOT NULL,
-    Correo NVARCHAR(150) NOT NULL,
-    Rol NVARCHAR(50) NOT NULL,
+CREATE DATABASE GestorDeTransporte;
+GO
+
+USE GestorDeTransporte;
+GO
+
+CREATE TABLE Usuarios (
+    Cedula VARCHAR(9) PRIMARY KEY,
+    NombreUsuario VARCHAR(50) NOT NULL UNIQUE,
+    Correo VARCHAR(100) NOT NULL UNIQUE,
+    Clave VARCHAR(255) NOT NULL,
+    TipoUsuario VARCHAR(20) NOT NULL,
     IntentosFallidos INT NOT NULL DEFAULT 0,
     Bloqueado BIT NOT NULL DEFAULT 0,
-    FechaBloqueo DATETIME NULL
+    FechaRegistro DATETIME NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT CK_Usuarios_TipoUsuario
+        CHECK (TipoUsuario IN ('Administrador', 'Chofer', 'Pasajero'))
 );
 GO
 
-CREATE TABLE Choferes
-(
-    Id INT PRIMARY KEY IDENTITY(1,1),
-    Identificacion NVARCHAR(50) NOT NULL,
-    Nombre NVARCHAR(100) NOT NULL,
-    Apellidos NVARCHAR(100) NOT NULL,
-    Correo NVARCHAR(150) NOT NULL,
-    UsuarioId INT NOT NULL,
-    CONSTRAINT FK_Chofer_Usuario
-        FOREIGN KEY (UsuarioId)
-        REFERENCES Usuarios(Id)
+CREATE TABLE Pasajeros (
+    Cedula VARCHAR(9) PRIMARY KEY,
+    Nombre1 VARCHAR(50) NOT NULL,
+    Nombre2 VARCHAR(50) NULL,
+    Apellido1 VARCHAR(50) NOT NULL,
+    Apellido2 VARCHAR(50) NULL,
+
+    CONSTRAINT FK_Pasajeros_Usuarios
+        FOREIGN KEY (Cedula) REFERENCES Usuarios(Cedula)
 );
 GO
 
-CREATE TABLE Pasajeros
-(
-    Id INT PRIMARY KEY IDENTITY(1,1),
-    Identificacion NVARCHAR(50) NOT NULL,
-    Nombre NVARCHAR(100) NOT NULL,
-    Apellidos NVARCHAR(100) NOT NULL,
-    Correo NVARCHAR(150) NOT NULL,
-    UsuarioId INT NOT NULL,
-    CONSTRAINT FK_Pasajero_Usuario
-        FOREIGN KEY (UsuarioId)
-        REFERENCES Usuarios(Id)
+CREATE TABLE Choferes (
+    Cedula VARCHAR(9) PRIMARY KEY,
+    Nombre1 VARCHAR(50) NOT NULL,
+    Nombre2 VARCHAR(50) NULL,
+    Apellido1 VARCHAR(50) NOT NULL,
+    Apellido2 VARCHAR(50) NULL,
+
+    CONSTRAINT FK_Choferes_Usuarios
+        FOREIGN KEY (Cedula) REFERENCES Usuarios(Cedula)
 );
 GO
 
-CREATE TABLE Rutas
-(
-    Id INT PRIMARY KEY IDENTITY(1,1),
-    Nombre NVARCHAR(100) NOT NULL,
-    Origen NVARCHAR(100) NOT NULL,
-    Destino NVARCHAR(100) NOT NULL,
-    DuracionEstimada TIME NOT NULL,
-    PrecioBase DECIMAL(18,2) NOT NULL
+CREATE TABLE Rutas (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre VARCHAR(50) NOT NULL,
+    Origen VARCHAR(100) NOT NULL,
+    Destino VARCHAR(100) NOT NULL,
+    DuracionEstimada TIME NULL,
+    PrecioBase DECIMAL(10,2) NOT NULL
 );
 GO
 
-CREATE TABLE Unidades
-(
-    Id INT PRIMARY KEY IDENTITY(1,1),
-    Placa NVARCHAR(20) NOT NULL,
-    Modelo NVARCHAR(100) NOT NULL,
-    AnioFabricacion INT NOT NULL,
-    CapacidadPasajeros INT NOT NULL,
-    CONSTRAINT UQ_Unidades_Placa UNIQUE (Placa)
+CREATE TABLE Unidades (
+    Placa VARCHAR(20) PRIMARY KEY,
+    Modelo VARCHAR(100) NOT NULL,
+    AnoFabricacion SMALLINT NOT NULL,
+    Capacidad SMALLINT NOT NULL,
+
+    CONSTRAINT CK_Unidades_AnoFabricacion
+        CHECK (AnoFabricacion BETWEEN 1900 AND YEAR(GETDATE())),
+
+    CONSTRAINT CK_Unidades_Capacidad
+        CHECK (Capacidad BETWEEN 1 AND 10000)
 );
-GO
-
-CREATE TABLE EstadosViaje (
-    Id INT PRIMARY KEY IDENTITY(1,1),
-    Nombre NVARCHAR(50) NOT NULL UNIQUE
-);GO
-
-INSERT INTO EstadosViaje (Nombre)
-VALUES 
-('Programado'),
-('En Curso'),
-('Completado'),
-('Cancelado');
 GO
 
 CREATE TABLE Viajes (
-    Id INT PRIMARY KEY IDENTITY(1,1),
-    RutaId INT NOT NULL,
-    UnidadId INT NOT NULL,
-    ChoferId INT NOT NULL,
-    EstadoViajeId INT NOT NULL,
+    NumeroViaje INT IDENTITY(1,1) PRIMARY KEY,
+    IdRuta INT NOT NULL,
+    PlacaUnidad VARCHAR(20) NOT NULL,
+    CedulaChofer VARCHAR(9) NOT NULL,
+    EstadoViaje VARCHAR(20) NOT NULL,
     FechaHoraSalida DATETIME NOT NULL,
-    FechaHoraLlegadaEstimada DATETIME NOT NULL,
-    MotivoCancelacion NVARCHAR(300) NULL,
-    FechaCancelacion DATETIME NULL,
+    MotivoCancelacion VARCHAR(255) NULL,
+    FechaHoraCancelacion DATETIME NULL,
 
-    CONSTRAINT FK_Viajes_Rutas FOREIGN KEY (RutaId) REFERENCES Rutas(Id),
-    CONSTRAINT FK_Viajes_Unidades FOREIGN KEY (UnidadId) REFERENCES Unidades(Id),
-    CONSTRAINT FK_Viajes_Choferes FOREIGN KEY (ChoferId) REFERENCES Choferes(Id),
-    CONSTRAINT FK_Viajes_Estados FOREIGN KEY (EstadoViajeId) REFERENCES EstadosViaje(Id)
-);GO
+    CONSTRAINT FK_Viajes_Rutas
+        FOREIGN KEY (IdRuta) REFERENCES Rutas(Id),
 
+    CONSTRAINT FK_Viajes_Unidades
+        FOREIGN KEY (PlacaUnidad) REFERENCES Unidades(Placa),
+
+    CONSTRAINT FK_Viajes_Choferes
+        FOREIGN KEY (CedulaChofer) REFERENCES Choferes(Cedula),
+
+    CONSTRAINT CK_Viajes_EstadoViaje
+        CHECK (EstadoViaje IN ('Programado', 'EnCurso', 'Finalizado', 'Cancelado'))
+);
+GO
+
+CREATE TABLE Reservas (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    NumeroViaje INT NOT NULL,
+    CedulaPasajero VARCHAR(9) NOT NULL,
+    NumeroAsiento INT NOT NULL,
+    MontoPagado DECIMAL(10,2) NOT NULL,
+    FechaHora DATETIME NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT FK_Reservas_Viajes
+        FOREIGN KEY (NumeroViaje) REFERENCES Viajes(NumeroViaje),
+
+    CONSTRAINT FK_Reservas_Pasajeros
+        FOREIGN KEY (CedulaPasajero) REFERENCES Pasajeros(Cedula),
+
+    CONSTRAINT UQ_Reservas_Viaje_Asiento
+        UNIQUE (NumeroViaje, NumeroAsiento)
+);
+GO
 
 --------------------------------------------------
 ------------------INSERTAR DATOS------------------
 --------------------------------------------------
 
 INSERT INTO Usuarios
-(
-    NombreUsuario,
-    Clave,
-    Correo,
-    Rol,
-    IntentosFallidos,
-    Bloqueado,
-    FechaBloqueo
-)
+(Cedula, NombreUsuario, Correo, Clave, TipoUsuario)
 VALUES
-(
-    'Administrador',
-    'TicoBus2025*',
-    'proyectolenguajes2026@gmail.com',
-    'Administrador',
-    0,
-    0,
-    NULL
-),
-(
-    'chavezangulo9@gmail.com',
-    '33f99b9f',
-    'chavezangulo9@gmail.com',
-    'Chofer',
-    0,
-    0,
-    NULL
-),
-(
-    'joseelchido85@gmail.com',
-    'd0018664',
-    'joseelchido85@gmail.com',
-    'Pasajero',
-    0,
-    0,
-    NULL
-);
-GO
-
-INSERT INTO Choferes
-(
-    Identificacion,
-    Nombre,
-    Apellidos,
-    Correo,
-    UsuarioId
-)
-VALUES
-(
-    '901180430',
-    'Martin',
-    'Chavez Angulo',
-    'chavezangulo9@gmail.com',
-    2
-);
-GO
-
--------------DATOS USADOS PARA PRUEBAS DE MODULO 6---------------
-INSERT INTO Usuarios 
-(NombreUsuario, Clave, Correo, Rol, IntentosFallidos, Bloqueado, FechaBloqueo)
-VALUES
-('admin', '123', 'admin@transporte.com', 'Administrador', 0, 0, NULL),
-('chofer1@transporte.com', '123', 'chofer1@transporte.com', 'Chofer', 0, 0, NULL),
-('chofer2@transporte.com', '123', 'chofer2@transporte.com', 'Chofer', 0, 0, NULL),
-('pasajero1@transporte.com', '123', 'pasajero1@transporte.com', 'Pasajero', 0, 0, NULL);
-
-
-/* CHOFERES */
-INSERT INTO Choferes
-(Identificacion, Nombre, Apellidos, Correo, UsuarioId)
-VALUES
-('101110111', 'Carlos', 'Ramírez Mora', 'chofer1@transporte.com', 2),
-('202220222', 'Andrés', 'Solano Vega', 'chofer2@transporte.com', 3);
-
-
-/* PASAJEROS */
-INSERT INTO Pasajeros
-(Identificacion, Nombre, Apellidos, Correo, UsuarioId)
-VALUES
-('303330333', 'María', 'Gómez Rojas', 'pasajero1@transporte.com', 4);
-
-
-/* RUTAS */
-INSERT INTO Rutas
-(Nombre, Origen, Destino, DuracionEstimada, PrecioBase)
-VALUES
-('San José - Liberia', 'San José', 'Liberia', '04:30:00', 5000),
-('Liberia - Nicoya', 'Liberia', 'Nicoya', '02:00:00', 2500),
-('San José - Puntarenas', 'San José', 'Puntarenas', '02:15:00', 3200);
-
-
-/* UNIDADES */
-INSERT INTO Unidades
-(Placa, Modelo, AnioFabricacion, CapacidadPasajeros)
-VALUES
-('BUS001', 'Mercedes Benz', 2022, 45),
-('BUS002', 'Hyundai County', 2021, 30),
-('BUS003', 'Volvo B270F', 2023, 50);
+('100000001', 'Administrador', 'admin@transporte.com', 'TicoBus2025*', 'Administrador');
 
